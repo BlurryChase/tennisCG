@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+
+		</style>
+	</head>
+<body>
+
+	<table>
+		<tr>
+			<tr>
+				<td colspan="2">
+					<button id="resetGames" >RESET GAMES</button>
+				</td>
+				<td>
+					<button id="resetPoints" >RESET POINTS</button>
+				</td>
+				<td>
+					<button id="serveChange" >SERVICE CHANGE</button>
+				</td>
+				<td>
+					<select id="setSelector">
+						<option value="set1">Set 1</option>
+						<option value="set2">Set 2</option>
+						<option value="set3">Set 3</option>
+					</select>
+				</td>
+				<td>
+					<p>TIEBREAKER:</p>
+				</td>
+				<td>
+					<input type="checkbox" id="tiebreaker">
+				</td>
+			</tr>
+		</tr>
+	</table>
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Override</th>
+			<th>Serve</th>
+			<th>Sets</th>
+			<th>Games</th>
+			<th>Points</th>
+
+			<th colspan="4">Modifiers</th>
+
+		</tr>
+		<tr>
+			<td>
+				<p id="playerA_fullName"></p>
+			</td>
+			<td>
+				<input id="playerA_nameOverride" type="text"></input>
+			</td>
+			<td>
+				<p id="playerA_serveIndicator"></p>
+			</td>
+			<td>
+				<p id="playerA_setWon"></p>
+			</td>
+			<td>
+				<p id="playerA_currentSet_gamesWon"></p>
+			</td>
+			<td>
+				<p id="playerA_currentSet_pointsWon"></p>
+			</td>
+			<td>
+				<button id="playerA_currentSet_pointUp" type="number">Point +</button>
+			</td>
+			<td>
+				<button id="playerA_currentSet_pointDown" type="number">Point -</button>
+			</td>
+			<td>
+				<button id="playerA_currentSet_gameUp" type="number">Game +</button>
+			</td>
+			<td>
+				<button id="playerA_currentSet_gameDown" type="number">Game -</button>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p id="playerB_fullName"></p>
+			</td>
+			<td>
+				<input id="playerB_nameOverride" type="text"></input>
+			</td>
+			<td>
+				<p id="playerB_serveIndicator"></p>
+			</td>
+			<td>
+				<p id="playerB_setWon"></p>
+			</td>
+			<td>
+				<p id="playerB_currentSet_gamesWon"></p>
+			</td>
+			<td>
+				<p id="playerB_currentSet_pointsWon"></p>
+			</td>
+			<td>
+				<button id="playerB_currentSet_pointUp" type="number">Point +</button>
+			</td>
+			<td>
+				<button id="playerB_currentSet_pointDown" type="number">Point -</button>
+			</td>
+			<td>
+				<button id="playerB_currentSet_gameUp" type="number">Game +</button>
+			</td>
+			<td>
+				<button id="playerB_currentSet_gameDown" type="number">Game -</button>
+			</td>
+		</tr>
+	</table>
+
+	<button id="nameBtn">Override Last Name</button>
+</body>
+
+<script src="js/scoreboard.js"></script>
+</html>

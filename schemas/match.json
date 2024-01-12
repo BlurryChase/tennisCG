@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "matchInfo" :{
+      "type" : "object",
+      "properties": {
+        "format" : { "type" : "string", "default": "Men's Singles" },
+        "round" : { "type" : "string", "default": "Final" },
+        "tiebreaker": {"type": "boolean", "default": false},
+        "matchTime" : { "type" : "integer", "default": 0 },
+        "setTimes" : {
+          "type": "object",
+          "properties": {
+            "set1" : { "type" : "integer", "default": 0 },
+            "set2" : { "type" : "integer", "default": 0 },
+            "set3" : { "type" : "integer", "default": 0 }
+          }
+        }
+      }
+    },
+
+    "playerA": {
+      "type":"object",
+      "properties": {
+        "personalInfo" :{
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string", "default": "Carlos" },
+            "lastName": { "type": "string", "default": "Alcaraz" },
+            "nameOverride" : {"type": "string", "default": ""},
+            "nation": { "type": "string", "default": "ESP" },
+            "seed": { "type": "integer", "default": 1 },
+            "serveIndicator": { "type": "boolean", "default": true }
+          }
+        },
+        "currentSet" :{
+          "type": "object",
+          "properties": {
+            "gamesWon": { "type": "integer", "default": 0 },
+            "pointsWon": { "type": "integer", "default": 0 }
+          }
+        },
+        "completedSets" :{
+          "type": "object",
+          "properties": {
+            "gamesPerSet": { 
+              "type": "object",
+              "properties": {
+                "set1": { "type": "integer", "default": 0 },
+                "set2": { "type": "integer", "default": 0 },
+                "set3": { "type": "integer", "default": 0 }
+              }
+            },
+            "setWon": { 
+              "type": "object",
+              "properties": {
+                "set1": { "type": "boolean", "default": false },
+                "set2": { "type": "boolean", "default": false },
+                "set3": { "type": "boolean", "default": false }
+              }
+            }
+          }
+        }
+      }
+    },
+    "playerB": {
+      "type":"object",
+      "properties": {
+        "personalInfo" :{
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string", "default": "Novak" },
+            "lastName": { "type": "string", "default": "Djokovic" },
+            "nameOverride" : {"type": "string", "default": ""},
+            "nation": { "type": "string", "default": "SRB" },
+            "seed": { "type": "integer", "default": 2 },
+            "serveIndicator": { "type": "boolean", "default": false }
+          }
+        },
+        "currentSet" :{
+          "type": "object",
+          "properties": {
+            "gamesWon": { "type": "integer", "default": 0 },
+            "pointsWon": { "type": "integer", "default": 0 }
+          }
+        },
+        "completedSets" :{
+          "type": "object",
+          "properties": {
+            "gamesPerSet": { 
+              "type": "object",
+              "properties": {
+                "set1": { "type": "integer", "default": 0 },
+                "set2": { "type": "integer", "default": 0 },
+                "set3": { "type": "integer", "default": 0 }
+              }
+            },
+            "setWon": { 
+              "type": "object",
+              "properties": {
+                "set1": { "type": "boolean", "default": false },
+                "set2": { "type": "boolean", "default": false },
+                "set3": { "type": "boolean", "default": false }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scoreboardVisible": {"type":"boolean", "default":false},
+    "changeoverVisible": {"type":"boolean", "default":false}
+  }
+}

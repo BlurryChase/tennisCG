@@ -1,0 +1,57 @@
+{
+  "name": "tennisCG",
+  "version": "0.0.0",
+  "description": "",
+  "homepage": "",
+  "author": {
+    "name": "Chase Kowalski",
+    "email": "chase@tourneylocator.com",
+    "url": "twitter.com/BlurryChase_"
+  },
+  "files": [
+    "dashboard",
+    "graphics"
+  ],
+  "keywords": [
+    "",
+    "nodecg-bundle"
+  ],
+  "nodecg": {
+    "compatibleRange": "^2.1.8",
+    "dashboardPanels": [
+      {
+        "name": "playerInfo",
+        "title": "Player Info",
+        "width": 5,
+        "file": "playerinfo.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "scoreboard",
+        "title": "In-Game Scoreboard",
+        "width": 6,
+        "file": "scoreboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "changeover",
+        "title": "Changeover Scoreboard",
+        "width": 4,
+        "file": "changeover.html",
+        "headerColor": "#525F78"
+      }
+    ],
+    "graphics": [
+      {
+        "file": "match.html",
+        "width": 1920,
+        "height": 1080
+      }
+    ]
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bonjour": "^3.5.0",
+    "express": "^4.18.2"
+  }
+}

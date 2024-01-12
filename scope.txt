@@ -1,0 +1,55 @@
+project scope
+
+just a fun project i decided to put together on a whim
+
+player object
+
+colors
+white : #FFFFFF
+green : #008e33
+purple : #54006d
+
+
+global variables
+
+firstName
+lastName
+country
+seed
+serveIndicator
+totalTime
+
+
+in-game scoreboard
+
+inGame_setCount
+inGame_gameCount
+inGame_pointCount 
+serveIndicator
+
+changeover scoreboard
+
+fullName (consisting of firstName, lastName, country, and seed[if permits])
+changeover_setCount (probably make this an object)
+--
+
+serveIndicator
+
+graphics
+
+in game scoreboard
+
+estimated size: 340x80
+has: lastName, setsWon, gamesWon, pointsWon, serveIndicator
+
+animation
+fade in (after replays)
+motion in
+
+animation steps
+full time ~ 00:02
+-0.0-0.3  left border (green 10x80) sweeps -80 
+-0.35-1 player names sweeps in (white/off white 210x80) 
+-1-1.33 sets sweeps (green) in
+-1.33-1.66 games sweeps (purple) in
+-1.66-2 points sweeps (white) in 
