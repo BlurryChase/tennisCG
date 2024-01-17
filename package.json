@@ -22,7 +22,7 @@
       {
         "name": "playerInfo",
         "title": "Player Info",
-        "width": 5,
+        "width": 6,
         "file": "playerinfo.html",
         "headerColor": "#525F78"
       },

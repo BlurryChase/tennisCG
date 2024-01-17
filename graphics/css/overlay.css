@@ -1,0 +1,108 @@
+@font-face {
+    font-family: mainFont;
+    src: url('../assets/Montserrat/static/Montserrat-Bold.ttf');
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 1920;
+    height: 1080;
+    overflow: hidden;
+    background: aqua;
+    color: white;
+    text-transform: uppercase;
+    font-family: mainFont;
+    font-size: 30px;
+
+
+}
+
+#scoreContainer {
+    position: absolute;
+    left: 80px;
+    top: 80px;
+    width: auto;
+    height: 80px;
+
+    display: flex;
+}
+
+#animateContainer {
+    
+    background: #008e33;
+    width: 10px;
+    height: 80px;
+    left: 0;
+
+
+}
+
+#nameContainer {
+    position: relative;   
+    background: #f5f5f5;
+    width: auto;
+    height: 80px;
+    padding-right: 16px;
+
+    text-align: left;
+    color: #54006d;
+}
+
+.playerNames {
+    position: relative;
+    height: 32px;
+    width: 100%;
+    margin: 5px;
+    padding-right: 8px;
+    background: #fff;
+    white-space: nowrap;
+}
+
+
+#setsWonContainer {
+    position: relative;
+    background: #008e33;
+    width: 40px;
+    height: 80px;
+
+    text-align: center;
+    color: #fff;
+
+
+}
+
+.playerPoints {
+    position: relative;
+    width: 36px;
+    height: 40px;
+    left: 2px;
+    top: 4px;
+
+    font-size: 26px;
+
+}
+
+#gamesWonContainer {
+    position: relative;
+    background: #54006d;
+    width: 40px;
+    height: 80px;
+
+    text-align: center;
+    color: #fff;
+}
+
+#pointsWonContainer {
+    position: relative;
+    background: #fff;
+    width: 40px;
+    height: 80px;
+
+    text-align: center;
+    color: #54006d;
+}

@@ -5,18 +5,18 @@ const nameReplicant = nodecg.Replicant('match');
 // Declare Top Player (A) Vars
 
 let playerA_fullName = document.querySelector("#playerA_fullName");
-let playerA_nameOverride = document.querySelector("#playerA_nameOverride");
+// let playerA_nameOverride = document.querySelector("#playerA_nameOverride");
 let playerA_serveIndicator = document.querySelector("#playerA_serveIndicator");
-let playerA_setwon = document.querySelector("#playerA_setWon");
+let playerA_setWon = document.querySelector("#playerA_setWon");
 let playerA_currentSet_gamesWon = document.querySelector("#playerA_currentSet_gamesWon");
 let playerA_currentSet_pointsWon = document.querySelector("#playerA_currentSet_pointsWon");
 
 // Declare Bottom Player (B) Vars
 
 let playerB_fullName = document.querySelector("#playerB_fullName");
-let playerB_nameOverride = document.querySelector("#playerB_nameOverride");
+// let playerB_nameOverride = document.querySelector("#playerB_nameOverride");
 let playerB_serveIndicator = document.querySelector("#playerB_serveIndicator");
-let playerB_setwon = document.querySelector("#playerB_setWon");
+let playerB_setWon = document.querySelector("#playerB_setWon");
 let playerB_currentSet_gamesWon = document.querySelector("#playerB_currentSet_gamesWon");
 let playerB_currentSet_pointsWon = document.querySelector("#playerB_currentSet_pointsWon");
 
@@ -54,26 +54,22 @@ nameReplicant.on('change', (newValue, oldValue) => {
 
 
   playerA_fullName.innerHTML = newValue.playerA.personalInfo.firstName + " " + newValue.playerA.personalInfo.lastName;
-  playerA_nameOverride.value = newValue.playerA.personalInfo.nameOverride;
-  playerA_setwon.innerHTML = 
+  // playerA_nameOverride.value = newValue.playerA.personalInfo.nameOverride;
+  playerA_setWon.innerHTML = 
     Number(newValue.playerA.completedSets.setWon.set1) + 
     Number(newValue.playerA.completedSets.setWon.set2) + 
-    Number(newValue.playerA.completedSets.setWon.set3) + 
-    Number(newValue.playerA.completedSets.setWon.set4) + 
-    Number(newValue.playerA.completedSets.setWon.set5) ;
+    Number(newValue.playerA.completedSets.setWon.set3) ;
   playerA_currentSet_gamesWon.innerHTML = newValue.playerA.currentSet.gamesWon;
   playerA_currentSet_pointsWon.innerHTML = newValue.playerA.currentSet.pointsWon;
 
   
   
   playerB_fullName.innerHTML = newValue.playerB.personalInfo.firstName + " " + newValue.playerB.personalInfo.lastName;
-  playerB_nameOverride.value = newValue.playerB.personalInfo.nameOverride;
-  playerB_setwon.innerHTML = 
+  // playerB_nameOverride.value = newValue.playerB.personalInfo.nameOverride;
+  playerB_setWon.innerHTML = 
     Number(newValue.playerB.completedSets.setWon.set1) + 
     Number(newValue.playerB.completedSets.setWon.set2) + 
-    Number(newValue.playerB.completedSets.setWon.set3) + 
-    Number(newValue.playerB.completedSets.setWon.set4) + 
-    Number(newValue.playerB.completedSets.setWon.set5) ;
+    Number(newValue.playerB.completedSets.setWon.set3) ;
   playerB_currentSet_gamesWon.innerHTML = newValue.playerB.currentSet.gamesWon;
   playerB_currentSet_pointsWon.innerHTML = newValue.playerB.currentSet.pointsWon;
   
@@ -196,11 +192,11 @@ tiebreaker.onclick = () => {
   nameReplicant.value.matchInfo.tiebreaker = tiebreaker.checked;
 }
 
-nameBtn.onclick = () => {
+// nameBtn.onclick = () => {
 
 
-  nameReplicant.value.playerA.personalInfo.nameOverride = playerA_nameOverride.value;
-  nameReplicant.value.playerB.personalInfo.nameOverride = playerB_nameOverride.value;
+//   nameReplicant.value.playerA.personalInfo.nameOverride = playerA_nameOverride.value;
+//   nameReplicant.value.playerB.personalInfo.nameOverride = playerB_nameOverride.value;
 
 
-};
+// };
