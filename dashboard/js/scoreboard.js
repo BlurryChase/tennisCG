@@ -82,6 +82,10 @@ nameReplicant.on('change', (newValue, oldValue) => {
     playerB_serveIndicator.innerHTML = "*";
 
   };
+
+  tiebreaker.checked = newValue.matchInfo.tiebreaker;
+  console.log(newValue.matchInfo.tiebreaker)
+
 });
 
 // Change Points/Games
