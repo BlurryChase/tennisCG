@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+
+		</style>
+	</head>
+<body>
+
+	<div id="infoContainer">
+		<button id="saveMatchInfo">Update Match Info</button>
+		<div>Match Info</div>
+		<div>
+			<input type="text" id="format" placeholder="Men's Singles">
+			<input type="text" id="round" placeholder="Final">
+		</div>
+		<div>Match Timer</div>
+		<button id="startTimer" class="timerBtn" onclick="startTime()">Start Timer</button>
+		<button id="pauseTimer" class="timerBtn" onclick="pauseTime()">Pause Timer</button>
+		<button id="resetTimer" class="timerBtn" onclick="resetTime()">Reset Timer</button>
+		<h1 id="matchTimer"></h1>
+		<div>Set Completion Times</div>
+		<table>
+			<tr>
+				<td><button id="completeSet1" onclick="completeSet1()">Complete Set 1</button></td>
+				<td><p id="set1Time"></p></td>
+			</tr>
+			<tr>
+				<td><button id="completeSet2" onclick="completeSet2()">Complete Set 2</button></td>
+				<td><p id="set2Time"></p></td>
+			</tr>
+			<tr>
+				<td><button id="completeSet3" onclick="completeSet3()">Complete Set 3</button></td>
+				<td><p id="set3Time"></p></td>
+			</tr>
+		</table>
+
+	</div>
+</body>
+<script src="js/moment/moment.js"></script>
+<script src="js/matchinfotimer.js"></script>
+</html>

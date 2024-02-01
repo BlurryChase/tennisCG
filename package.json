@@ -39,6 +39,21 @@
         "width": 4,
         "file": "changeover.html",
         "headerColor": "#525F78"
+      },
+      {
+        "name": "matchinfotimer",
+        "title": "Match Info & Timer",
+        "width": 5,
+        "file": "matchinfotimer.html",
+        "headerColor": "#525F78"
+      }
+      ,
+      {
+        "name": "graphiccontrol",
+        "title": "Graphic Controls",
+        "width": 3,
+        "file": "graphiccontrol.html",
+        "headerColor": "#525F78"
       }
     ],
     "graphics": [
@@ -49,6 +64,11 @@
       },
       {
         "file": "changeover.html",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "file": "tweentest.html",
         "width": 1920,
         "height": 1080
       }

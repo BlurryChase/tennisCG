@@ -5,12 +5,12 @@
 }(this, (function (exports) { 'use strict';
 
 	/*!
-	 * EaselPlugin 3.1.1
-	 * https://greensock.com
+	 * EaselPlugin 3.12.5
+	 * https://gsap.com
 	 *
-	 * @license Copyright 2008-2020, GreenSock. All rights reserved.
-	 * Subject to the terms at https://greensock.com/standard-license or for
-	 * Club GreenSock members, the agreement issued with that membership.
+	 * @license Copyright 2008-2024, GreenSock. All rights reserved.
+	 * Subject to the terms at https://gsap.com/standard-license or for
+	 * Club GSAP members, the agreement issued with that membership.
 	 * @author: Jack Doyle, jack@greensock.com
 	*/
 	var gsap,
@@ -33,8 +33,19 @@
 	  return console.warn(message);
 	},
 	    _cache = function _cache(target) {
-	  var bounds = target.getBounds && target.getBounds();
-	  target.cache && target.cache(bounds.x, bounds.y, bounds.width, bounds.height);
+	  var b = target.getBounds && target.getBounds();
+
+	  if (!b) {
+	    b = target.nominalBounds || {
+	      x: 0,
+	      y: 0,
+	      width: 100,
+	      height: 100
+	    };
+	    target.setBounds && target.setBounds(b.x, b.y, b.width, b.height);
+	  }
+
+	  target.cache && target.cache(b.x, b.y, b.width, b.height);
 
 	  _warn("EaselPlugin: for filters to display in EaselJS, you must call the object's cache() method first. GSAP attempted to use the target's getBounds() for the cache but that may not be completely accurate. " + target);
 	},
@@ -101,7 +112,7 @@
 	    p = _colorProps[i];
 
 	    if (s[p] !== e[p]) {
-	      pt = plugin.add(s, p, s[p], e[p]);
+	      pt = plugin.add(s, p, s[p], e[p], 0, 0, 0, 0, 0, 1);
 
 	      if (pt) {
 	        pt.op = "easel_colorFilter";
@@ -234,7 +245,7 @@
 
 	  while (--i > -1) {
 	    if (matrix[i] !== startMatrix[i]) {
-	      pg = plugin.add(startMatrix, i, startMatrix[i], matrix[i]);
+	      pg = plugin.add(startMatrix, i, startMatrix[i], matrix[i], 0, 0, 0, 0, 0, 1);
 
 	      if (pg) {
 	        pg.op = "easel_colorMatrixFilter";
@@ -263,7 +274,7 @@
 	};
 
 	var EaselPlugin = {
-	  version: "3.1.1",
+	  version: "3.12.5",
 	  name: "easel",
 	  init: function init(target, value, tween, index, targets) {
 	    if (!_coreInitted) {
@@ -301,7 +312,7 @@
 	          }
 	        }
 
-	        pt = this.add(target, "gotoAndStop", target.currentFrame, end, index, targets, Math.round);
+	        pt = this.add(target, "gotoAndStop", target.currentFrame, end, index, targets, Math.round, 0, 0, 1);
 
 	        if (pt) {
 	          pt.op = p;

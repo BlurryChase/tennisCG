@@ -6,18 +6,10 @@
     "matchInfo" :{
       "type" : "object",
       "properties": {
+        "court" : { "type" : "string", "default": "Center Court" },
         "format" : { "type" : "string", "default": "Men's Singles" },
         "round" : { "type" : "string", "default": "Final" },
-        "tiebreaker": {"type": "boolean", "default": false},
-        "matchTime" : { "type" : "integer", "default": 0 },
-        "setTimes" : {
-          "type": "object",
-          "properties": {
-            "set1" : { "type" : "integer", "default": 0 },
-            "set2" : { "type" : "integer", "default": 0 },
-            "set3" : { "type" : "integer", "default": 0 }
-          }
-        }
+        "tiebreaker": {"type": "boolean", "default": false}
       }
     },
 

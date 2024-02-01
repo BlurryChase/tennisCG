@@ -1,10 +1,10 @@
 /*!
- * EaselPlugin 3.1.1
- * https://greensock.com
+ * EaselPlugin 3.12.5
+ * https://gsap.com
  *
- * @license Copyright 2008-2020, GreenSock. All rights reserved.
- * Subject to the terms at https://greensock.com/standard-license or for
- * Club GreenSock members, the agreement issued with that membership.
+ * @license Copyright 2008-2024, GreenSock. All rights reserved.
+ * Subject to the terms at https://gsap.com/standard-license or for
+ * Club GSAP members, the agreement issued with that membership.
  * @author: Jack Doyle, jack@greensock.com
 */
 /* eslint-disable */
@@ -16,8 +16,12 @@ let gsap, _coreInitted, _win, _createJS, _ColorFilter, _ColorMatrixFilter,
 	_getCreateJS = () => _createJS || (_win && _win.createjs) || _win || {},
 	_warn = message => console.warn(message),
 	_cache = target => {
-		let bounds = target.getBounds && target.getBounds();
-		target.cache && target.cache(bounds.x, bounds.y, bounds.width, bounds.height);
+		let b = target.getBounds && target.getBounds();
+		if (!b) {
+			b = target.nominalBounds || {x:0, y:0, width: 100, height: 100};
+			target.setBounds && target.setBounds(b.x, b.y, b.width, b.height);
+		}
+		target.cache && target.cache(b.x, b.y, b.width, b.height);
 		_warn("EaselPlugin: for filters to display in EaselJS, you must call the object's cache() method first. GSAP attempted to use the target's getBounds() for the cache but that may not be completely accurate. " + target);
 	},
 	_parseColorFilter = (target, v, plugin) => {
@@ -68,7 +72,7 @@ let gsap, _coreInitted, _win, _createJS, _ColorFilter, _ColorMatrixFilter,
 		while (i--) {
 			p = _colorProps[i];
 			if (s[p] !== e[p]) {
-				pt = plugin.add(s, p, s[p], e[p]);
+				pt = plugin.add(s, p, s[p], e[p], 0, 0, 0, 0, 0, 1);
 				if (pt) {
 					pt.op = "easel_colorFilter";
 				}
@@ -183,7 +187,7 @@ let gsap, _coreInitted, _win, _createJS, _ColorFilter, _ColorMatrixFilter,
 		i = matrix.length;
 		while (--i > -1) {
 			if (matrix[i] !== startMatrix[i]) {
-				pg = plugin.add(startMatrix, i, startMatrix[i], matrix[i]);
+				pg = plugin.add(startMatrix, i, startMatrix[i], matrix[i], 0, 0, 0, 0, 0, 1);
 				if (pg) {
 					pg.op = "easel_colorMatrixFilter";
 				}
@@ -211,7 +215,7 @@ let gsap, _coreInitted, _win, _createJS, _ColorFilter, _ColorMatrixFilter,
 
 
 export const EaselPlugin = {
-	version: "3.1.1",
+	version: "3.12.5",
 	name: "easel",
 	init(target, value, tween, index, targets) {
 		if (!_coreInitted) {
@@ -245,7 +249,7 @@ export const EaselPlugin = {
 						}
 					}
 				}
-				pt = this.add(target, "gotoAndStop", target.currentFrame, end, index, targets, Math.round);
+				pt = this.add(target, "gotoAndStop", target.currentFrame, end, index, targets, Math.round, 0, 0, 1);
 				if (pt) {
 					pt.op = p;
 				}

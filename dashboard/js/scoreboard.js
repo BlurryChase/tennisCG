@@ -84,7 +84,6 @@ nameReplicant.on('change', (newValue, oldValue) => {
   };
 
   tiebreaker.checked = newValue.matchInfo.tiebreaker;
-  console.log(newValue.matchInfo.tiebreaker)
 
 });
 

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "matchTime" : { "type" : "integer", "default": 0 },
+    "setTimes" : {
+      "type": "object",
+      "properties": {
+        "set1" : { "type" : "integer", "default": 0 },
+        "set2" : { "type" : "integer", "default": 0 },
+        "set3" : { "type" : "integer", "default": 0 }
+      }
+    }
+  }
+}

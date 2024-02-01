@@ -9,6 +9,9 @@
 
 	let pointDur = 0.18
 
+	let anim = gsap.timeline();
+
+
 
 	function pointCheck(whoWon, point) {
 		switch (true) {
@@ -176,6 +179,27 @@
 			
 				
 		}};
+
+		// visibility
+		if (newValue.scoreboardVisible != oldValue.scoreboardVisible) {
+			switch (newValue.scoreboardVisible) {
+				case false:
+					// gsap.to('#scoreContainer', {opacity: 0, duration: 0.5})
+					anim.to('#pointsWonContainer', {duration: 0.3, width: '0px'})
+					anim.to('#gamesWonContainer', {duration: 0.3, width: '0px'}, "<33%")
+					anim.to('#setsWonContainer', {duration: 0.3, width: '0px'}, "<33%")
+					anim.to('#nameContainer', {duration: 0.5, width: '0px'}, "<33%")
+					anim.to('#animateContainer', {duration: 0.4, height: '0px',  ease: "power1.in"})
+					break;
+				case true:
+					anim.to('#animateContainer', {duration: 0.5, height: '80px', ease: "power1.out"})
+					anim.to('#nameContainer', {duration: 0.5, width: 'auto'})
+					anim.to('#setsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					anim.to('#gamesWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					anim.to('#pointsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					break;
+			}
+		}
 		
 
 		// END

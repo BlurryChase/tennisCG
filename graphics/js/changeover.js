@@ -1,12 +1,40 @@
 	// We can access Replicants from other bundles by specifying the bundle name as a second parameter.
 	// NodeCG requires that bundle names match their directory names, but you can always check the `package.json` to double check.
 	const matchReplicant = nodecg.Replicant('match');
+	const timeReplicant = nodecg.Replicant('time');
+
+	let animChangeover = gsap.timeline();
+
+	NodeCG.waitForReplicants(timeReplicant).then(() => {
+
+		set1Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set1 / 60) + "'" ;
+		set2Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set2 / 60) + "'" ;
+		set3Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set3 / 60) + "'" ;
+
+		if (timeReplicant.value.matchTime >= 3600) {
+			let mins = Math.floor(timeReplicant.value.matchTime / 60);
+			console.log(mins);
+			let hrs = Math.floor(mins / 60);
+			console.log(hrs)
+			mins = Math.floor(mins % (hrs * 60));
+			if (hrs >= 2) {
+				matchTime.innerHTML = hrs + 'hrs ' + mins + 'mins';
+			} else {
+				matchTime.innerHTML = hrs + 'hr ' + mins + 'mins';
+			}
+		} else {
+			matchTime.innerHTML = Math.floor(timeReplicant.value.matchTime / 60)   + 'mins';
+
+		}
+
+	});
 
 	NodeCG.waitForReplicants(matchReplicant).then(() => {
 		
 		// match info
 
-		// note for future chase, this is also where timer info will go
+		format.innerHTML = matchReplicant.value.matchInfo.format;
+		round.innerHTML = matchReplicant.value.matchInfo.round;
 
 		// player info
 		
@@ -55,6 +83,7 @@
 			if (document.querySelector(`#playerA_set${i+1}`).innerText == 0 && document.querySelector(`#playerB_set${i+1}`).innerText == 0) {
 				document.querySelector(`#playerA_set${i+1}`).style.opacity = 0;
 				document.querySelector(`#playerB_set${i+1}`).style.opacity = 0;
+				document.querySelector(`#set${i+1}Timer`).style.opacity = 0;
 			}
 		}
 
@@ -63,13 +92,35 @@
 		
 	});
 
+	timeReplicant.on('change', (newValue, oldValue) => {
+
+		set1Timer.innerHTML = Math.floor(newValue.setTimes.set1 / 60) + "'" ;
+		set2Timer.innerHTML = Math.floor(newValue.setTimes.set2 / 60) + "'" ;
+		set3Timer.innerHTML = Math.floor(newValue.setTimes.set3 / 60) + "'" ;
+
+		if (newValue.matchTime >= 3600) {
+			let mins = Math.floor(newValue.matchTime / 60);
+			let hrs = Math.floor(mins / 60);
+			mins = Math.floor(mins % (hrs * 60));
+			if (hrs >= 2) {
+				matchTime.innerHTML = hrs + 'hrs ' + mins + 'mins';
+			} else {
+				matchTime.innerHTML = hrs + 'hr ' + mins + 'mins';
+			}
+		} else {
+			matchTime.innerHTML = Math.floor(newValue.matchTime / 60)   + 'mins';
+
+		}
+	});
+
 	// Change will be called when the Replicant loads too, so we can use it to set the initial value.
 	matchReplicant.on('change', (newValue, oldValue) => {
 		//  START
 
 		// match info
 
-		// note for future chase, this is also where timer info will go
+		format.innerHTML = newValue.matchInfo.format;
+		round.innerHTML = newValue.matchInfo.round;
 
 		// personal info
 
@@ -128,6 +179,25 @@
 			} else {
 				document.querySelector(`#playerA_set${i+1}`).style.opacity = 1;
 				document.querySelector(`#playerB_set${i+1}`).style.opacity = 1;
+			}
+		}
+
+		// visibility
+		if (newValue.changeoverVisible != oldValue.changeoverVisible) {
+			switch (newValue.changeoverVisible) {
+				case false:
+					// gsap.to('#scoreContainer', {opacity: 0, duration: 0.5})
+					animChangeover.to('#greenFlair', {duration: 0.2, width: '0px'},)
+					animChangeover.to('.scoreContainer', {duration: 0.8, width: '0px', ease: "power1.out"}, "<33%")
+					animChangeover.to('.infoContainer', {duration: 1, width: '0px', ease: "power1.out"}, "<33%")
+					animChangeover.to('.tourneyContainer', {duration: 0.4, height: '0px', width: '0px',  ease: "power1.in"})
+					break;
+				case true:
+					animChangeover.to('.tourneyContainer', {duration: 0.4, height: '200px', width: '110px', ease: "power1.out"})
+					animChangeover.to('.infoContainer', {duration: 1, width: '560px', ease: "power1.out"})
+					animChangeover.to('.scoreContainer', {duration: 0.8, width: '184px', ease: "power1.out"}, "<33%")
+					animChangeover.to('#greenFlair', {duration: 0.2, width: '10px'}, "<33%")
+					break;
 			}
 		}
 		

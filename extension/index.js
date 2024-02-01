@@ -4,6 +4,11 @@ module.exports = function (nodecg) {
 
   console.log(matchRep.value);
 
+  
+  const timeRep = nodecg.Replicant('time');
+
+  console.log(timeRep.value);
+
 
 
 }

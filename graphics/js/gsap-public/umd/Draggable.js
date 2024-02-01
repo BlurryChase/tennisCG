@@ -25,8 +25,10 @@
       _divContainer,
       _svgContainer,
       _identityMatrix,
+      _gEl,
       _transformProp = "transform",
       _transformOriginProp = _transformProp + "Origin",
+      _hasOffsetBug,
       _setDoc = function _setDoc(element) {
     var doc = element.ownerDocument || element;
 
@@ -44,9 +46,40 @@
       _doc = doc;
       _docElement = doc.documentElement;
       _body = doc.body;
+      _gEl = _doc.createElementNS("http://www.w3.org/2000/svg", "g");
+      _gEl.style.transform = "none";
+      var d1 = doc.createElement("div"),
+          d2 = doc.createElement("div"),
+          root = doc && (doc.body || doc.firstElementChild);
+
+      if (root && root.appendChild) {
+        root.appendChild(d1);
+        d1.appendChild(d2);
+        d1.setAttribute("style", "position:static;transform:translate3d(0,0,1px)");
+        _hasOffsetBug = d2.offsetParent !== d1;
+        root.removeChild(d1);
+      }
     }
 
     return doc;
+  },
+      _forceNonZeroScale = function _forceNonZeroScale(e) {
+    var a, cache;
+
+    while (e && e !== _body) {
+      cache = e._gsap;
+      cache && cache.uncache && cache.get(e, "x");
+
+      if (cache && !cache.scaleX && !cache.scaleY && cache.renderTransform) {
+        cache.scaleX = cache.scaleY = 1e-4;
+        cache.renderTransform(1, cache);
+        a ? a.push(cache) : a = [cache];
+      }
+
+      e = e.parentNode;
+    }
+
+    return a;
   },
       _svgTemps = [],
       _divTemps = [],
@@ -77,7 +110,7 @@
           type = svg ? i ? "rect" : "g" : "div",
           x = i !== 2 ? 0 : 100,
           y = i === 3 ? 100 : 0,
-          css = "position:absolute;display:block;pointer-events:none;",
+          css = "position:absolute;display:block;pointer-events:none;margin:0;padding:0;",
           e = _doc.createElementNS ? _doc.createElementNS(ns.replace(/^https/, "http"), type) : _doc.createElement(type);
 
       if (i) {
@@ -87,16 +120,13 @@
             _divContainer.style.cssText = css;
           }
 
-          e.style.cssText = css + "width:1px;height:1px;top:" + y + "px;left:" + x + "px";
+          e.style.cssText = css + "width:0.1px;height:0.1px;top:" + y + "px;left:" + x + "px";
 
           _divContainer.appendChild(e);
         } else {
-          if (!_svgContainer) {
-            _svgContainer = _createSibling(element);
-          }
-
-          e.setAttribute("width", 1);
-          e.setAttribute("height", 1);
+          _svgContainer || (_svgContainer = _createSibling(element));
+          e.setAttribute("width", 0.01);
+          e.setAttribute("height", 0.01);
           e.setAttribute("transform", "translate(" + x + "," + y + ")");
 
           _svgContainer.appendChild(e);
@@ -108,56 +138,107 @@
 
     throw "Need document and parent.";
   },
-      _placeSiblings = function _placeSiblings(element) {
+      _consolidate = function _consolidate(m) {
+    var c = new Matrix2D(),
+        i = 0;
+
+    for (; i < m.numberOfItems; i++) {
+      c.multiply(m.getItem(i).matrix);
+    }
+
+    return c;
+  },
+      _getCTM = function _getCTM(svg) {
+    var m = svg.getCTM(),
+        transform;
+
+    if (!m) {
+      transform = svg.style[_transformProp];
+      svg.style[_transformProp] = "none";
+      svg.appendChild(_gEl);
+      m = _gEl.getCTM();
+      svg.removeChild(_gEl);
+      transform ? svg.style[_transformProp] = transform : svg.style.removeProperty(_transformProp.replace(/([A-Z])/g, "-$1").toLowerCase());
+    }
+
+    return m || _identityMatrix.clone();
+  },
+      _placeSiblings = function _placeSiblings(element, adjustGOffset) {
     var svg = _svgOwner(element),
         isRootSVG = element === svg,
         siblings = svg ? _svgTemps : _divTemps,
+        parent = element.parentNode,
         container,
         m,
         b,
         x,
-        y;
+        y,
+        cs;
 
     if (element === _win) {
       return element;
     }
 
-    if (!siblings.length) {
-      siblings.push(_createSibling(element, 1), _createSibling(element, 2), _createSibling(element, 3));
-    }
-
+    siblings.length || siblings.push(_createSibling(element, 1), _createSibling(element, 2), _createSibling(element, 3));
     container = svg ? _svgContainer : _divContainer;
 
     if (svg) {
-      b = isRootSVG ? {
-        x: 0,
-        y: 0
-      } : element.getBBox();
-      m = element.transform ? element.transform.baseVal : [];
-
-      if (m.length) {
-        m = m.consolidate().matrix;
+      if (isRootSVG) {
+        b = _getCTM(element);
+        x = -b.e / b.a;
+        y = -b.f / b.d;
+        m = _identityMatrix;
+      } else if (element.getBBox) {
+        b = element.getBBox();
+        m = element.transform ? element.transform.baseVal : {};
+        m = !m.numberOfItems ? _identityMatrix : m.numberOfItems > 1 ? _consolidate(m) : m.getItem(0).matrix;
         x = m.a * b.x + m.c * b.y;
         y = m.b * b.x + m.d * b.y;
       } else {
-        m = _identityMatrix;
-        x = b.x;
-        y = b.y;
-      }
-
-      if (element.tagName.toLowerCase() === "g") {
+        m = new Matrix2D();
         x = y = 0;
       }
 
+      if (adjustGOffset && element.tagName.toLowerCase() === "g") {
+        x = y = 0;
+      }
+
+      (isRootSVG ? svg : parent).appendChild(container);
       container.setAttribute("transform", "matrix(" + m.a + "," + m.b + "," + m.c + "," + m.d + "," + (m.e + x) + "," + (m.f + y) + ")");
-      (isRootSVG ? svg : element.parentNode).appendChild(container);
     } else {
-      container.style.top = element.offsetTop + "px";
-      container.style.left = element.offsetLeft + "px";
-      m = _win.getComputedStyle(element);
-      container.style[_transformProp] = m[_transformProp];
-      container.style[_transformOriginProp] = m[_transformOriginProp];
-      container.style.position = m.position === "fixed" ? "fixed" : "absolute";
+      x = y = 0;
+
+      if (_hasOffsetBug) {
+        m = element.offsetParent;
+        b = element;
+
+        while (b && (b = b.parentNode) && b !== m && b.parentNode) {
+          if ((_win.getComputedStyle(b)[_transformProp] + "").length > 4) {
+            x = b.offsetLeft;
+            y = b.offsetTop;
+            b = 0;
+          }
+        }
+      }
+
+      cs = _win.getComputedStyle(element);
+
+      if (cs.position !== "absolute" && cs.position !== "fixed") {
+        m = element.offsetParent;
+
+        while (parent && parent !== m) {
+          x += parent.scrollLeft || 0;
+          y += parent.scrollTop || 0;
+          parent = parent.parentNode;
+        }
+      }
+
+      b = container.style;
+      b.top = element.offsetTop - y + "px";
+      b.left = element.offsetLeft - x + "px";
+      b[_transformProp] = cs[_transformProp];
+      b[_transformOriginProp] = cs[_transformOriginProp];
+      b.position = cs.position === "fixed" ? "fixed" : "absolute";
       element.parentNode.appendChild(container);
     }
 
@@ -211,7 +292,7 @@
           d = this.d,
           e = this.e,
           f = this.f,
-          determinant = a * d - b * c;
+          determinant = a * d - b * c || 1e-10;
       return _setMatrix(this, d / determinant, -b / determinant, -c / determinant, a / determinant, (c * f - d * e) / determinant, -(a * f - b * e) / determinant);
     };
 
@@ -229,6 +310,10 @@
           e2 = matrix.e,
           f2 = matrix.f;
       return _setMatrix(this, a2 * a + c2 * c, a2 * b + c2 * d, b2 * a + d2 * c, b2 * b + d2 * d, e + e2 * a + f2 * c, f + e2 * b + f2 * d);
+    };
+
+    _proto.clone = function clone() {
+      return new Matrix2D(this.a, this.b, this.c, this.d, this.e, this.f);
     };
 
     _proto.equals = function equals(matrix) {
@@ -254,29 +339,41 @@
           d = this.d,
           e = this.e,
           f = this.f;
-      decoratee.x = x * a + y * c + e;
-      decoratee.y = x * b + y * d + f;
+      decoratee.x = x * a + y * c + e || 0;
+      decoratee.y = x * b + y * d + f || 0;
       return decoratee;
     };
 
     return Matrix2D;
   }();
-  function getGlobalMatrix(element, inverse) {
-    if (!element || !element.parentNode) {
+  function getGlobalMatrix(element, inverse, adjustGOffset, includeScrollInFixed) {
+    if (!element || !element.parentNode || (_doc || _setDoc(element)).documentElement === element) {
       return new Matrix2D();
     }
 
-    var svg = _svgOwner(element),
+    var zeroScales = _forceNonZeroScale(element),
+        svg = _svgOwner(element),
         temps = svg ? _svgTemps : _divTemps,
-        container = _placeSiblings(element),
+        container = _placeSiblings(element, adjustGOffset),
         b1 = temps[0].getBoundingClientRect(),
         b2 = temps[1].getBoundingClientRect(),
         b3 = temps[2].getBoundingClientRect(),
         parent = container.parentNode,
-        isFixed = _isFixed(element),
+        isFixed = !includeScrollInFixed && _isFixed(element),
         m = new Matrix2D((b2.left - b1.left) / 100, (b2.top - b1.top) / 100, (b3.left - b1.left) / 100, (b3.top - b1.top) / 100, b1.left + (isFixed ? 0 : _getDocScrollLeft()), b1.top + (isFixed ? 0 : _getDocScrollTop()));
 
     parent.removeChild(container);
+
+    if (zeroScales) {
+      b1 = zeroScales.length;
+
+      while (b1--) {
+        b2 = zeroScales[b1];
+        b2.scaleX = b2.scaleY = 0;
+        b2.renderTransform(1, b2);
+      }
+    }
+
     return inverse ? m.inverse() : m;
   }
 
@@ -293,12 +390,14 @@
       _supportsPassive,
       _isTouchDevice,
       _touchEventLookup,
-      _dragCount,
       _isMultiTouching,
       _isAndroid,
       InertiaPlugin,
       _defaultCursor,
       _supportsPointer,
+      _context,
+      _getStyleSaver,
+      _dragCount = 0,
       _windowExists = function _windowExists() {
     return typeof window !== "undefined";
   },
@@ -359,6 +458,16 @@
 
     return obj;
   },
+      _setTouchActionForAllDescendants = function _setTouchActionForAllDescendants(elements, value) {
+    var i = elements.length,
+        children;
+
+    while (i--) {
+      value ? elements[i].style.touchAction = value : elements[i].style.removeProperty("touch-action");
+      children = elements[i].children;
+      children && children.length && _setTouchActionForAllDescendants(children, value);
+    }
+  },
       _renderQueueTick = function _renderQueueTick() {
     return _renderQueue.forEach(function (func) {
       return func();
@@ -407,30 +516,19 @@
         passive: false
       } : null);
       element.addEventListener(touchType || type, func, capture);
-
-      if (touchType && type !== touchType && touchType.substr(0, 7) !== "pointer") {
-        element.addEventListener(type, func, capture);
-      }
+      touchType && type !== touchType && element.addEventListener(type, func, capture);
     }
   },
-      _removeListener = function _removeListener(element, type, func) {
+      _removeListener = function _removeListener(element, type, func, capture) {
     if (element.removeEventListener) {
       var touchType = _touchEventLookup[type];
-      element.removeEventListener(touchType || type, func);
-
-      if (touchType && type !== touchType && touchType.substr(0, 7) !== "pointer") {
-        element.removeEventListener(type, func);
-      }
+      element.removeEventListener(touchType || type, func, capture);
+      touchType && type !== touchType && element.removeEventListener(type, func, capture);
     }
   },
       _preventDefault = function _preventDefault(event) {
-    if (event.preventDefault) {
-      event.preventDefault();
-
-      if (event.preventManipulation) {
-        event.preventManipulation();
-      }
-    }
+    event.preventDefault && event.preventDefault();
+    event.preventManipulation && event.preventManipulation();
   },
       _hasTouchID = function _hasTouchID(list, ID) {
     var i = list.length;
@@ -480,20 +578,23 @@
         client = "client" + dim;
     return Math.max(0, _isRoot(element) ? Math.max(_docElement$1[scroll], _body$1[scroll]) - (_win$1["inner" + dim] || _docElement$1[client] || _body$1[client]) : element[scroll] - element[client]);
   },
-      _recordMaxScrolls = function _recordMaxScrolls(e) {
+      _recordMaxScrolls = function _recordMaxScrolls(e, skipCurrent) {
     var x = _getMaxScroll(e, "x"),
         y = _getMaxScroll(e, "y");
 
     if (_isRoot(e)) {
       e = _windowProxy;
     } else {
-      _recordMaxScrolls(e.parentNode);
+      _recordMaxScrolls(e.parentNode, skipCurrent);
     }
 
     e._gsMaxScrollX = x;
     e._gsMaxScrollY = y;
-    e._gsScrollX = e.scrollLeft || 0;
-    e._gsScrollY = e.scrollTop || 0;
+
+    if (!skipCurrent) {
+      e._gsScrollX = e.scrollLeft || 0;
+      e._gsScrollY = e.scrollTop || 0;
+    }
   },
       _setStyle = function _setStyle(element, property, value) {
     var style = element.style;
@@ -613,8 +714,7 @@
         bbox,
         width,
         height,
-        cs,
-        contextParent;
+        cs;
 
     if (element === _win$1) {
       top = _getDocScrollTop$1(doc);
@@ -640,8 +740,9 @@
 
         if (!width) {
           cs = _getComputedStyle(element);
-          width = (parseFloat(cs.width) || element.clientWidth || 0) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
-          height = (parseFloat(cs.height) || element.clientHeight || 0) + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+          bbox = cs.boxSizing === "border-box";
+          width = (parseFloat(cs.width) || element.clientWidth || 0) + (bbox ? 0 : parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth));
+          height = (parseFloat(cs.height) || element.clientHeight || 0) + (bbox ? 0 : parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth));
         }
       }
 
@@ -677,10 +778,9 @@
     });
     left = Math.min(p1.x, p2.x, p3.x, p4.x);
     top = Math.min(p1.y, p2.y, p3.y, p4.y);
-    contextParent = context.parentNode || {};
     return {
-      left: left + (contextParent.scrollLeft || 0),
-      top: top + (contextParent.scrollTop || 0),
+      left: left,
+      top: top,
       width: Math.max(p1.x, p2.x, p3.x, p4.x) - left,
       height: Math.max(p1.y, p2.y, p3.y, p4.y) - top
     };
@@ -751,7 +851,7 @@
   },
       _isClickable = function _isClickable(element) {
     var data;
-    return !element || !element.getAttribute || element === _body$1 ? false : (data = element.getAttribute("data-clickable")) === "true" || data !== "false" && (element.onclick || _clickableTagExp.test(element.nodeName + "") || element.getAttribute("contentEditable") === "true") ? true : _isClickable(element.parentNode);
+    return !element || !element.getAttribute || element === _body$1 ? false : (data = element.getAttribute("data-clickable")) === "true" || data !== "false" && (_clickableTagExp.test(element.nodeName + "") || element.getAttribute("contentEditable") === "true") ? true : _isClickable(element.parentNode);
   },
       _setSelectable = function _setSelectable(elements, selectable) {
     var i = elements.length,
@@ -1024,6 +1124,7 @@
   },
       _initCore = function _initCore(required) {
     if (_windowExists() && document.body) {
+      var nav = window && window.navigator;
       _win$1 = window;
       _doc$1 = document;
       _docElement$1 = _doc$1.documentElement;
@@ -1033,8 +1134,8 @@
       _placeholderDiv = _createElement("div");
       _placeholderDiv.style.cssText = "visibility:hidden;height:1px;top:-1px;pointer-events:none;position:relative;clear:both;cursor:grab";
       _defaultCursor = _placeholderDiv.style.cursor === "grab" ? "grab" : "move";
-      _isAndroid = _win$1.navigator && _win$1.navigator.userAgent.toLowerCase().indexOf("android") !== -1;
-      _isTouchDevice = "ontouchstart" in _docElement$1 && "orientation" in _win$1;
+      _isAndroid = nav && nav.userAgent.toLowerCase().indexOf("android") !== -1;
+      _isTouchDevice = "ontouchstart" in _docElement$1 && "orientation" in _win$1 || nav && (nav.MaxTouchPoints > 0 || nav.msMaxTouchPoints > 0);
 
       _addPaddingBR = function () {
         var div = _createElement("div"),
@@ -1045,7 +1146,7 @@
 
         childStyle.display = "inline-block";
         childStyle.position = "relative";
-        div.style.cssText = child.innerHTML = "width:90px;height:40px;padding:10px;overflow:auto;visibility:hidden";
+        div.style.cssText = "width:90px;height:40px;padding:10px;overflow:auto;visibility:hidden";
         div.appendChild(child);
         parent.appendChild(div);
         val = child.offsetHeight + 18 > div.scrollHeight;
@@ -1055,7 +1156,7 @@
 
       _touchEventLookup = function (types) {
         var standard = types.split(","),
-            converted = (!_isUndefined(_tempDiv.onpointerdown) ? "pointerdown,pointermove,pointerup,pointercancel" : !_isUndefined(_tempDiv.onmspointerdown) ? "MSPointerDown,MSPointerMove,MSPointerUp,MSPointerCancel" : types).split(","),
+            converted = ("onpointerdown" in _tempDiv ? "pointerdown,pointermove,pointerup,pointercancel" : "onmspointerdown" in _tempDiv ? "MSPointerDown,MSPointerMove,MSPointerUp,MSPointerCancel" : types).split(","),
             obj = {},
             i = 4;
 
@@ -1094,10 +1195,14 @@
 
     if (gsap) {
       InertiaPlugin = gsap.plugins.inertia;
+
+      _context = gsap.core.context || function () {};
+
       _checkPrefix = gsap.utils.checkPrefix;
       _transformProp$1 = _checkPrefix(_transformProp$1);
       _transformOriginProp$1 = _checkPrefix(_transformOriginProp$1);
       _toArray = gsap.utils.toArray;
+      _getStyleSaver = gsap.core.getStyleSaver;
       _supports3D = !!_checkPrefix("perspective");
     } else if (required) {
       console.warn("Please gsap.registerPlugin(Draggable)");
@@ -1122,8 +1227,8 @@
 
     _proto.removeEventListener = function removeEventListener(type, callback) {
       var list = this._listeners[type],
-          i = list && list.indexOf(callback) || -1;
-      i > -1 && list.splice(i, 1);
+          i = list && list.indexOf(callback);
+      i >= 0 && list.splice(i, 1);
     };
 
     _proto.dispatchEvent = function dispatchEvent(type) {
@@ -1149,12 +1254,9 @@
       var _this2;
 
       _this2 = _EventDispatcher.call(this) || this;
-
-      if (!gsap) {
-        _initCore(1);
-      }
-
+      _coreInitted || _initCore(1);
       target = _toArray(target)[0];
+      _this2.styles = _getStyleSaver && _getStyleSaver(target, "transform,left,top");
 
       if (!InertiaPlugin) {
         InertiaPlugin = gsap.plugins.inertia;
@@ -1221,22 +1323,19 @@
           touchEventTarget,
           matrix,
           interrupted,
-          startScrollTop,
-          startScrollLeft,
           allowNativeTouchScrolling,
           touchDragAxis,
           isDispatching,
           clickDispatch,
           trustedClickDispatch,
+          isPreventingDefault,
+          innerMatrix,
+          dragged,
           onContextMenu = function onContextMenu(e) {
-        if (self.isPressed && e.which < 2) {
-          self.endDrag();
-        } else {
-          _preventDefault(e);
+        _preventDefault(e);
 
-          e.stopPropagation();
-          return false;
-        }
+        e.stopImmediatePropagation && e.stopImmediatePropagation();
+        return false;
       },
           render = function render(suppressEvents) {
         if (self.autoScroll && self.isDragging && (checkAutoScrollBounds || dirty)) {
@@ -1352,7 +1451,7 @@
               }
 
               if (allowX) {
-                self.deltaY = x - parseFloat(target.style.left || 0);
+                self.deltaX = x - parseFloat(target.style.left || 0);
                 target.style.left = x + "px";
               }
             }
@@ -1389,6 +1488,8 @@
           gsCache = gsap.core.getCache(target);
         }
 
+        gsCache.uncache && gsap.getProperty(target, "x");
+
         if (xyMode) {
           self.x = parseFloat(gsCache.x);
           self.y = parseFloat(gsCache.y);
@@ -1398,8 +1499,8 @@
           self.y = scrollProxy.top();
           self.x = scrollProxy.left();
         } else {
-          self.y = parseInt(target.style.top || (cs = _getComputedStyle(target)) && cs.top, 10) || 0;
-          self.x = parseInt(target.style.left || (cs || {}).left, 10) || 0;
+          self.y = parseFloat(target.style.top || (cs = _getComputedStyle(target)) && cs.top) || 0;
+          self.x = parseFloat(target.style.left || (cs || {}).left) || 0;
         }
 
         if ((snapX || snapY || snapXY) && !skipSnap && (self.isDragging || self.isThrowing)) {
@@ -1444,9 +1545,7 @@
           }
         }
 
-        if (dirty) {
-          render(true);
-        }
+        dirty && render(true);
 
         if (!skipOnUpdate) {
           self.deltaX = self.x - x;
@@ -1467,7 +1566,7 @@
         if (_isFunction(snap)) {
           return function (n) {
             var edgeTolerance = !self.isPressed ? 1 : 1 - self.edgeResistance;
-            return snap.call(self, n > max ? max + (n - max) * edgeTolerance : n < min ? min + (n - min) * edgeTolerance : n) * factor;
+            return snap.call(self, (n > max ? max + (n - max) * edgeTolerance : n < min ? min + (n - min) * edgeTolerance : n) * factor) * factor;
           };
         }
 
@@ -1696,6 +1795,7 @@
           self.tween = tween = gsap.to(scrollProxy || target, {
             inertia: inertia,
             data: "_draggable",
+            inherit: false,
             onComplete: onThrowComplete,
             onInterrupt: onThrowInterrupt,
             onUpdate: vars.fastMode ? _dispatchEvent : syncXY,
@@ -1707,7 +1807,7 @@
               scrollProxy._skip = true;
             }
 
-            tween.render(tween.duration(), true, true);
+            tween.render(1e9, true, true);
             syncXY(true, true);
             self.endX = self.x;
             self.endY = self.y;
@@ -1748,24 +1848,31 @@
       },
           recordStartPositions = function recordStartPositions() {
         var edgeTolerance = 1 - self.edgeResistance,
+            offsetX = isFixed ? _getDocScrollLeft$1(ownerDoc) : 0,
+            offsetY = isFixed ? _getDocScrollTop$1(ownerDoc) : 0,
             parsedOrigin,
-            parent,
             x,
             y;
-        updateMatrix(false);
 
-        if (matrix) {
-          _point1.x = self.pointerX;
-          _point1.y = self.pointerY;
-          matrix.apply(_point1, _point1);
-          startPointerX = _point1.x;
-          startPointerY = _point1.y;
+        if (xyMode) {
+          gsCache.x = getPropAsNum(xProp, "px") + "px";
+          gsCache.y = getPropAsNum(yProp, "px") + "px";
+          gsCache.renderTransform();
         }
+
+        updateMatrix(false);
+        _point1.x = self.pointerX - offsetX;
+        _point1.y = self.pointerY - offsetY;
+        matrix && matrix.apply(_point1, _point1);
+        startPointerX = _point1.x;
+        startPointerY = _point1.y;
 
         if (dirty) {
           setPointerPosition(self.pointerX, self.pointerY);
           render(true);
         }
+
+        innerMatrix = getGlobalMatrix(target);
 
         if (scrollProxy) {
           calculateBounds();
@@ -1786,20 +1893,11 @@
               y: parseFloat(parsedOrigin[1]) || 0
             });
             syncXY(true, true);
-            x = self.pointerX - rotationOrigin.x;
-            y = rotationOrigin.y - self.pointerY;
-
-            if (isFixed) {
-              x -= _getDocScrollLeft$1(ownerDoc);
-              y += _getDocScrollTop$1(ownerDoc);
-            }
-
+            x = self.pointerX - rotationOrigin.x - offsetX;
+            y = rotationOrigin.y - self.pointerY + offsetY;
             startElementX = self.x;
             startElementY = self.y = Math.atan2(y, x) * _RAD2DEG;
           } else {
-            parent = !isFixed && target.parentNode;
-            startScrollTop = parent ? parent.scrollTop || 0 : 0;
-            startScrollLeft = parent ? parent.scrollLeft || 0 : 0;
             startElementY = getPropAsNum(yProp, "px");
             startElementX = getPropAsNum(xProp, "px");
           }
@@ -1821,8 +1919,8 @@
           }
         }
 
-        self.startX = startElementX;
-        self.startY = startElementY;
+        self.startX = startElementX = _round(startElementX);
+        self.startY = startElementY = _round(startElementY);
       },
           isTweening = function isTweening() {
         return self.tween && self.tween.isActive();
@@ -1836,10 +1934,12 @@
         var i;
 
         if (!enabled || self.isPressed || !e || (e.type === "mousedown" || e.type === "pointerdown") && !force && _getTime() - clickTime < 30 && _touchEventLookup[self.pointerEvent.type]) {
+          isPreventingDefault && e && enabled && _preventDefault(e);
           return;
         }
 
         interrupted = isTweening();
+        dragged = false;
         self.pointerEvent = e;
 
         if (_touchEventLookup[e.type]) {
@@ -1860,12 +1960,10 @@
 
         touchDragAxis = null;
 
-        if (!_supportsPointer) {
+        if (!_supportsPointer || !touchEventTarget) {
           _addListener(ownerDoc, "mouseup", onRelease);
 
-          if (e && e.target) {
-            _addListener(e.target, "mouseup", onRelease);
-          }
+          e && e.target && _addListener(e.target, "mouseup", onRelease);
         }
 
         isClicking = isClickable.call(self, e.target) && vars.dragClickables === false && !force;
@@ -1879,12 +1977,14 @@
 
           _setSelectable(triggers, true);
 
+          isPreventingDefault = false;
           return;
         }
 
         allowNativeTouchScrolling = !touchEventTarget || allowX === allowY || self.vars.allowNativeTouchScrolling === false || self.vars.allowContextMenu && e && (e.ctrlKey || e.which > 2) ? false : allowX ? "y" : "x";
+        isPreventingDefault = !allowNativeTouchScrolling && !self.allowEventDefault;
 
-        if (!allowNativeTouchScrolling && !self.allowEventDefault) {
+        if (isPreventingDefault) {
           _preventDefault(e);
 
           _addListener(_win$1, "touchforcechange", _preventDefault);
@@ -1918,20 +2018,12 @@
         }
 
         recordStartPositions();
-
-        if (self.tween) {
-          self.tween.kill();
-        }
-
+        self.tween && self.tween.kill();
         self.isThrowing = false;
         gsap.killTweensOf(scrollProxy || target, killProps, true);
-
-        if (scrollProxy) {
-          gsap.killTweensOf(target, {
-            scrollTo: 1
-          }, true);
-        }
-
+        scrollProxy && gsap.killTweensOf(target, {
+          scrollTo: 1
+        }, true);
         self.tween = self.lockedAxis = null;
 
         if (vars.zIndexBoost || !rotationMode && !scrollProxy && vars.zIndexBoost !== false) {
@@ -1942,7 +2034,7 @@
         hasDragCallback = !!(vars.onDrag || self._listeners.drag);
         hasMoveCallback = !!(vars.onMove || self._listeners.move);
 
-        if (!rotationMode && (vars.cursor !== false || vars.activeCursor)) {
+        if (vars.cursor !== false || vars.activeCursor) {
           i = triggers.length;
 
           while (--i > -1) {
@@ -1964,6 +2056,7 @@
             dy;
 
         if (!enabled || _isMultiTouching || !self.isPressed || !e) {
+          isPreventingDefault && e && enabled && _preventDefault(e);
           return;
         }
 
@@ -1976,7 +2069,7 @@
           if (e !== touch && e.identifier !== touchID) {
             i = touches.length;
 
-            while (--i > -1 && (e = touches[i]).identifier !== touchID) {}
+            while (--i > -1 && (e = touches[i]).identifier !== touchID && e.target !== target) {}
 
             if (i < 0) {
               return;
@@ -1987,13 +2080,9 @@
         }
 
         if (touchEventTarget && allowNativeTouchScrolling && !touchDragAxis) {
-          _point1.x = e.pageX;
-          _point1.y = e.pageY;
-
-          if (matrix) {
-            matrix.apply(_point1, _point1);
-          }
-
+          _point1.x = e.pageX - (isFixed ? _getDocScrollLeft$1(ownerDoc) : 0);
+          _point1.y = e.pageY - (isFixed ? _getDocScrollTop$1(ownerDoc) : 0);
+          matrix && matrix.apply(_point1, _point1);
           pointerX = _point1.x;
           pointerY = _point1.y;
           dx = Math.abs(pointerX - startPointerX);
@@ -2006,12 +2095,9 @@
               _addListener(_win$1, "touchforcechange", _preventDefault);
             }
 
-            if (self.vars.lockAxisOnTouchScroll !== false) {
+            if (self.vars.lockAxisOnTouchScroll !== false && allowX && allowY) {
               self.lockedAxis = touchDragAxis === "x" ? "y" : "x";
-
-              if (_isFunction(self.vars.onLockAxis)) {
-                self.vars.onLockAxis.call(self, originalEvent);
-              }
+              _isFunction(self.vars.onLockAxis) && self.vars.onLockAxis.call(self, originalEvent);
             }
 
             if (_isAndroid && allowNativeTouchScrolling === touchDragAxis) {
@@ -2023,13 +2109,17 @@
 
         if (!self.allowEventDefault && (!allowNativeTouchScrolling || touchDragAxis && allowNativeTouchScrolling !== touchDragAxis) && originalEvent.cancelable !== false) {
           _preventDefault(originalEvent);
+
+          isPreventingDefault = true;
+        } else if (isPreventingDefault) {
+          isPreventingDefault = false;
         }
 
         if (self.autoScroll) {
           checkAutoScrollBounds = true;
         }
 
-        setPointerPosition(e.pageX - (isFixed ? _getDocScrollLeft$1(ownerDoc) : 0), e.pageY - (isFixed ? _getDocScrollTop$1(ownerDoc) : 0), hasMoveCallback);
+        setPointerPosition(e.pageX, e.pageY, hasMoveCallback);
       },
           setPointerPosition = function setPointerPosition(pointerX, pointerY, invokeOnMove) {
         var dragTolerance = 1 - self.dragResistance,
@@ -2051,6 +2141,11 @@
             temp;
         self.pointerX = pointerX;
         self.pointerY = pointerY;
+
+        if (isFixed) {
+          pointerX -= _getDocScrollLeft$1(ownerDoc);
+          pointerY -= _getDocScrollTop$1(ownerDoc);
+        }
 
         if (rotationMode) {
           y = Math.atan2(rotationOrigin.y - pointerY, pointerX - rotationOrigin.x) * _RAD2DEG;
@@ -2126,7 +2221,9 @@
           if (snapY) {
             y = _round(snapY(y));
           }
-        } else if (hasBounds) {
+        }
+
+        if (hasBounds) {
           if (x > maxX) {
             x = maxX + Math.round((x - maxX) * edgeTolerance);
           } else if (x < minX) {
@@ -2160,7 +2257,7 @@
 
           if (!invokeOnMove || _dispatchEvent(self, "move", "onMove") !== false) {
             if (!self.isDragging && self.isPressed) {
-              self.isDragging = true;
+              self.isDragging = dragged = true;
 
               _dispatchEvent(self, "dragstart", "onDragStart");
             }
@@ -2178,7 +2275,8 @@
         }
       },
           onRelease = function onRelease(e, force) {
-        if (!enabled || !self.isPressed || e && touchID != null && !force && (e.pointerId && e.pointerId !== touchID || e.changedTouches && !_hasTouchID(e.changedTouches, touchID))) {
+        if (!enabled || !self.isPressed || e && touchID != null && !force && (e.pointerId && e.pointerId !== touchID && e.target !== target || e.changedTouches && !_hasTouchID(e.changedTouches, touchID))) {
+          isPreventingDefault && e && enabled && _preventDefault(e);
           return;
         }
 
@@ -2207,15 +2305,20 @@
 
         _removeListener(_win$1, "touchforcechange", _preventDefault);
 
-        if (!_supportsPointer) {
+        if (!_supportsPointer || !touchEventTarget) {
           _removeListener(ownerDoc, "mouseup", onRelease);
 
-          if (e && e.target) {
-            _removeListener(e.target, "mouseup", onRelease);
-          }
+          e && e.target && _removeListener(e.target, "mouseup", onRelease);
         }
 
         dirty = false;
+
+        if (wasDragging) {
+          dragEndTime = _lastDragTime = _getTime();
+          self.isDragging = false;
+        }
+
+        _removeFromRenderQueue(render);
 
         if (isClicking && !isContextMenuRelease) {
           if (e) {
@@ -2234,19 +2337,10 @@
           return;
         }
 
-        _removeFromRenderQueue(render);
+        i = triggers.length;
 
-        if (!rotationMode) {
-          i = triggers.length;
-
-          while (--i > -1) {
-            _setStyle(triggers[i], "cursor", vars.cursor || (vars.cursor !== false ? _defaultCursor : null));
-          }
-        }
-
-        if (wasDragging) {
-          dragEndTime = _lastDragTime = _getTime();
-          self.isDragging = false;
+        while (--i > -1) {
+          _setStyle(triggers[i], "cursor", vars.cursor || (vars.cursor !== false ? _defaultCursor : null));
         }
 
         _dragCount--;
@@ -2260,9 +2354,9 @@
             if (e !== touch && e.identifier !== touchID) {
               i = touches.length;
 
-              while (--i > -1 && (e = touches[i]).identifier !== touchID) {}
+              while (--i > -1 && (e = touches[i]).identifier !== touchID && e.target !== target) {}
 
-              if (i < 0) {
+              if (i < 0 && !force) {
                 return;
               }
             }
@@ -2276,8 +2370,12 @@
         if (isContextMenuRelease && originalEvent) {
           _preventDefault(originalEvent);
 
+          isPreventingDefault = true;
+
           _dispatchEvent(self, "release", "onRelease");
         } else if (originalEvent && !wasDragging) {
+          isPreventingDefault = false;
+
           if (interrupted && (vars.snap || vars.bounds)) {
             animate(vars.inertia || vars.throwProps);
           }
@@ -2314,20 +2412,18 @@
           animate(vars.inertia || vars.throwProps);
 
           if (!self.allowEventDefault && originalEvent && (vars.dragClickables !== false || !isClickable.call(self, originalEvent.target)) && wasDragging && (!allowNativeTouchScrolling || touchDragAxis && allowNativeTouchScrolling === touchDragAxis) && originalEvent.cancelable !== false) {
+            isPreventingDefault = true;
+
             _preventDefault(originalEvent);
+          } else {
+            isPreventingDefault = false;
           }
 
           _dispatchEvent(self, "release", "onRelease");
         }
 
-        if (isTweening()) {
-          placeholderDelayedCall.duration(self.tween.duration());
-        }
-
-        if (wasDragging) {
-          _dispatchEvent(self, "dragend", "onDragEnd");
-        }
-
+        isTweening() && placeholderDelayedCall.duration(self.tween.duration());
+        wasDragging && _dispatchEvent(self, "dragend", "onDragEnd");
         return true;
       },
           updateScroll = function updateScroll(e) {
@@ -2353,8 +2449,8 @@
       },
           onClick = function onClick(e) {
         var time = _getTime(),
-            recentlyClicked = time - clickTime < 40,
-            recentlyDragged = time - dragEndTime < 40,
+            recentlyClicked = time - clickTime < 100,
+            recentlyDragged = time - dragEndTime < 50,
             alreadyDispatched = recentlyClicked && clickDispatch === clickTime,
             defaultPrevented = self.pointerEvent && self.pointerEvent.defaultPrevented,
             alreadyDispatchedTrusted = recentlyClicked && trustedClickDispatch === clickTime,
@@ -2378,6 +2474,12 @@
             _preventDefault(e);
           }
         }
+
+        if (!recentlyClicked && !recentlyDragged && !dragged) {
+          e && e.target && (self.pointerEvent = e);
+
+          _dispatchEvent(self, "click", "onClick");
+        }
       },
           localizePoint = function localizePoint(p) {
         return matrix ? {
@@ -2390,10 +2492,7 @@
       };
 
       old = Draggable.get(target);
-
-      if (old) {
-        old.kill();
-      }
+      old && old.kill();
 
       _this2.startDrag = function (event, align) {
         var r1, r2, p1, p2;
@@ -2415,7 +2514,7 @@
         }
 
         if (!self.isDragging) {
-          self.isDragging = true;
+          self.isDragging = dragged = true;
 
           _dispatchEvent(self, "dragstart", "onDragStart");
         }
@@ -2548,6 +2647,23 @@
       };
 
       _this2.update = function (applyBounds, sticky, ignoreExternalChanges) {
+        if (sticky && self.isPressed) {
+          var m = getGlobalMatrix(target),
+              p = innerMatrix.apply({
+            x: self.x - startElementX,
+            y: self.y - startElementY
+          }),
+              m2 = getGlobalMatrix(target.parentNode, true);
+          m2.apply({
+            x: m.e - p.x,
+            y: m.f - p.y
+          }, p);
+          self.x -= p.x - m2.e;
+          self.y -= p.y - m2.f;
+          render(true);
+          recordStartPositions();
+        }
+
         var x = self.x,
             y = self.y;
         updateMatrix(!sticky);
@@ -2555,19 +2671,13 @@
         if (applyBounds) {
           self.applyBounds();
         } else {
-          if (dirty && ignoreExternalChanges) {
-            render(true);
-          }
-
+          dirty && ignoreExternalChanges && render(true);
           syncXY(true);
         }
 
         if (sticky) {
           setPointerPosition(self.pointerX, self.pointerY);
-
-          if (dirty) {
-            render(true);
-          }
+          dirty && render(true);
         }
 
         if (self.isPressed && !sticky && (allowX && Math.abs(x - self.x) > 0.01 || allowY && Math.abs(y - self.y) > 0.01 && !rotationMode)) {
@@ -2575,7 +2685,7 @@
         }
 
         if (self.autoScroll) {
-          _recordMaxScrolls(target.parentNode);
+          _recordMaxScrolls(target.parentNode, self.isDragging);
 
           checkAutoScrollBounds = self.isDragging;
           render(true);
@@ -2596,7 +2706,7 @@
             i,
             trigger;
 
-        if (!rotationMode && vars.cursor !== false) {
+        if (vars.cursor !== false) {
           setVars.cursor = vars.cursor || _defaultCursor;
         }
 
@@ -2604,17 +2714,14 @@
           setVars.touchCallout = "none";
         }
 
-        setVars.touchAction = allowX === allowY ? "none" : vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x";
-
         if (type !== "soft") {
+          _setTouchActionForAllDescendants(triggers, allowX === allowY ? "none" : vars.allowNativeTouchScrolling && target.scrollHeight === target.clientHeight === (target.scrollWidth === target.clientHeight) || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x");
+
           i = triggers.length;
 
           while (--i > -1) {
             trigger = triggers[i];
-
-            if (!_supportsPointer) {
-              _addListener(trigger, "mousedown", onPress);
-            }
+            _supportsPointer || _addListener(trigger, "mousedown", onPress);
 
             _addListener(trigger, "touchstart", onPress);
 
@@ -2622,15 +2729,13 @@
 
             gsap.set(trigger, setVars);
 
-            if (trigger.getBBox && trigger.ownerSVGElement) {
+            if (trigger.getBBox && trigger.ownerSVGElement && allowX !== allowY) {
               gsap.set(trigger.ownerSVGElement, {
-                touchAction: allowX === allowY ? "none" : vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x"
+                touchAction: vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x"
               });
             }
 
-            if (!vars.allowContextMenu) {
-              _addListener(trigger, "contextmenu", onContextMenu);
-            }
+            vars.allowContextMenu || _addListener(trigger, "contextmenu", onContextMenu);
           }
 
           _setSelectable(triggers, false);
@@ -2652,28 +2757,23 @@
           scrollProxy.element._gsDragID = id;
         }
 
-        if (vars.bounds) {
-          recordStartPositions();
-          self.applyBounds();
-        }
-
+        (vars.bounds || rotationMode) && recordStartPositions();
+        vars.bounds && self.applyBounds();
         return self;
       };
 
       _this2.disable = function (type) {
         var dragging = self.isDragging,
-            i,
+            i = triggers.length,
             trigger;
 
-        if (!rotationMode) {
-          i = triggers.length;
-
-          while (--i > -1) {
-            _setStyle(triggers[i], "cursor", null);
-          }
+        while (--i > -1) {
+          _setStyle(triggers[i], "cursor", null);
         }
 
         if (type !== "soft") {
+          _setTouchActionForAllDescendants(triggers, null);
+
           i = triggers.length;
 
           while (--i > -1) {
@@ -2681,13 +2781,11 @@
 
             _setStyle(trigger, "touchCallout", null);
 
-            _setStyle(trigger, "touchAction", null);
-
             _removeListener(trigger, "mousedown", onPress);
 
             _removeListener(trigger, "touchstart", onPress);
 
-            _removeListener(trigger, "click", onClick);
+            _removeListener(trigger, "click", onClick, true);
 
             _removeListener(trigger, "contextmenu", onContextMenu);
           }
@@ -2713,20 +2811,15 @@
 
         if (InertiaPlugin && type !== "soft") {
           InertiaPlugin.untrack(scrollProxy || target, xyMode ? "x,y" : rotationMode ? "rotation" : "top,left");
+          self.tween && self.tween.kill();
         }
 
-        if (scrollProxy) {
-          scrollProxy.disable();
-        }
+        scrollProxy && scrollProxy.disable();
 
         _removeFromRenderQueue(render);
 
         self.isDragging = self.isPressed = isClicking = false;
-
-        if (dragging) {
-          _dispatchEvent(self, "dragend", "onDragEnd");
-        }
-
+        dragging && _dispatchEvent(self, "dragend", "onDragEnd");
         return self;
       };
 
@@ -2736,11 +2829,7 @@
 
       _this2.kill = function () {
         self.isThrowing = false;
-
-        if (self.tween) {
-          self.tween.kill();
-        }
-
+        self.tween && self.tween.kill();
         self.disable();
         gsap.set(triggers, {
           clearProps: "userSelect"
@@ -2749,12 +2838,15 @@
         return self;
       };
 
+      _this2.revert = function () {
+        this.kill();
+        this.styles && this.styles.revert();
+      };
+
       if (~type.indexOf("scroll")) {
         scrollProxy = _this2.scrollProxy = new ScrollProxy(target, _extend({
           onKill: function onKill() {
-            if (self.isPressed) {
-              onRelease(null);
-            }
+            self.isPressed && onRelease(null);
           }
         }, vars));
         target.style.overflowY = allowY && !_isTouchDevice ? "auto" : "hidden";
@@ -2776,6 +2868,8 @@
 
       gsCache.force3D = "force3D" in vars ? vars.force3D : true;
 
+      _context(_assertThisInitialized(_this2));
+
       _this2.enable();
 
       return _this2;
@@ -2788,10 +2882,7 @@
     };
 
     Draggable.create = function create(targets, vars) {
-      if (!_coreInitted) {
-        _initCore(true);
-      }
-
+      _coreInitted || _initCore(true);
       return _toArray(targets).map(function (target) {
         return new Draggable(target, vars);
       });
@@ -2864,7 +2955,7 @@
   });
 
   Draggable.zIndex = 1000;
-  Draggable.version = "3.1.1";
+  Draggable.version = "3.12.5";
   _getGSAP() && gsap.registerPlugin(Draggable);
 
   exports.Draggable = Draggable;
