@@ -5,11 +5,33 @@
 
 	let animChangeover = gsap.timeline();
 
+	function gamesEachSet(player, targetObject) {
+		for (const [key, value] of Object.entries(targetObject)) {
+			document.querySelector(`#${player}_${key}`).innerHTML = value;
+		}
+	}
+
+	function noGamesCheck() {
+		// check if the game counts for player A & B are both 0. if yes, opacity for that set will be set to 0. 
+		for (let i = 0; i < 3; i++) {
+			if (document.querySelector(`#playerA_set${i+1}`).innerText == 0 && document.querySelector(`#playerB_set${i+1}`).innerText == 0) {
+				document.querySelector(`#playerA_set${i+1}`).style.opacity = 0;
+				document.querySelector(`#playerB_set${i+1}`).style.opacity = 0;
+				document.querySelector(`#set${i+1}Timer`).style.opacity = 0;
+			}
+		}
+	}
+
 	NodeCG.waitForReplicants(timeReplicant).then(() => {
+
+		// declare time for each set
 
 		set1Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set1 / 60) + "'" ;
 		set2Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set2 / 60) + "'" ;
 		set3Timer.innerHTML = Math.floor(timeReplicant.value.setTimes.set3 / 60) + "'" ;
+
+		// declare match time
+		// if statement is to determine how to display time for how much time has passed
 
 		if (timeReplicant.value.matchTime >= 3600) {
 			let mins = Math.floor(timeReplicant.value.matchTime / 60);
@@ -33,6 +55,7 @@
 		
 		// match info
 
+		courtName.innerHTML = matchReplicant.value.matchInfo.court;
 		format.innerHTML = matchReplicant.value.matchInfo.format;
 		round.innerHTML = matchReplicant.value.matchInfo.round;
 
@@ -70,26 +93,9 @@
 
 		// set info
 
-		for (const [key, value] of Object.entries(matchReplicant.value.playerA.completedSets.gamesPerSet)) {
-			document.querySelector(`#playerA_${key}`).innerHTML = value;
-		}
-
-		for (const [key, value] of Object.entries(matchReplicant.value.playerB.completedSets.gamesPerSet)) {
-			document.querySelector(`#playerB_${key}`).innerHTML = value;
-		}
-
-		// check if the game counts for player A & B are both 0. if yes, opacity for that set will be set to 0. 
-		for (let i = 0; i < 3; i++) {
-			if (document.querySelector(`#playerA_set${i+1}`).innerText == 0 && document.querySelector(`#playerB_set${i+1}`).innerText == 0) {
-				document.querySelector(`#playerA_set${i+1}`).style.opacity = 0;
-				document.querySelector(`#playerB_set${i+1}`).style.opacity = 0;
-				document.querySelector(`#set${i+1}Timer`).style.opacity = 0;
-			}
-		}
-
-
-
-		
+		gamesEachSet('playerA', matchReplicant.value.playerA.completedSets.gamesPerSet)
+		gamesEachSet('playerB', matchReplicant.value.playerB.completedSets.gamesPerSet)
+		noGamesCheck();
 	});
 
 	timeReplicant.on('change', (newValue, oldValue) => {
@@ -119,6 +125,7 @@
 
 		// match info
 
+		courtName.innerHTML = newValue.matchInfo.court;
 		format.innerHTML = newValue.matchInfo.format;
 		round.innerHTML = newValue.matchInfo.round;
 
@@ -148,7 +155,7 @@
 			playerB_seed.innerHTML = '';
 		}
 
-		// serve
+		// SERVE INDICATOR
 
 		if (newValue.playerA.personalInfo.serveIndicator === true) {
 			gsap.to("#playerB_serve", {duration: 0, opacity: 0, onComplete: function () {
@@ -160,43 +167,35 @@
 			}})
 		}
 
-		// set info
+		// SET INFO
 
+		gamesEachSet('playerA', newValue.playerA.completedSets.gamesPerSet)
+		gamesEachSet('playerB', newValue.playerB.completedSets.gamesPerSet)
+		noGamesCheck()
 
-		for (const [key, value] of Object.entries(newValue.playerA.completedSets.gamesPerSet)) {
-			document.querySelector(`#playerA_${key}`).innerHTML = value;
-		}
+		// VISIBILITY
 
-		for (const [key, value] of Object.entries(newValue.playerB.completedSets.gamesPerSet)) {
-			document.querySelector(`#playerB_${key}`).innerHTML = value;
-		}
+		/*
+		this uses GSAP to animate in and out, visit https://gsap.com/docs/v3/ for documentation
+		
+		uses the timeline object declared at the beginning of the file, to generalize:
 
-		// check if the game counts for player A & B are both 0. if yes, opacity for that set will be set to 0. 
-		for (let i = 0; i < 3; i++) {
-			if (document.querySelector(`#playerA_set${i+1}`).innerText == 0 && document.querySelector(`#playerB_set${i+1}`).innerText == 0) {
-				document.querySelector(`#playerA_set${i+1}`).style.opacity = 0;
-				document.querySelector(`#playerB_set${i+1}`).style.opacity = 0;
-			} else {
-				document.querySelector(`#playerA_set${i+1}`).style.opacity = 1;
-				document.querySelector(`#playerB_set${i+1}`).style.opacity = 1;
-			}
-		}
+		animChangeover.to([target DOM Element], {animation variables [duration, width, etc...]}, [animation start overlap, "<33%" starts animation when previous animation is 33% complete])
 
-		// visibility
+		*/
 		if (newValue.changeoverVisible != oldValue.changeoverVisible) {
 			switch (newValue.changeoverVisible) {
 				case false:
-					// gsap.to('#scoreContainer', {opacity: 0, duration: 0.5})
-					animChangeover.to('#greenFlair', {duration: 0.2, width: '0px'},)
-					animChangeover.to('.scoreContainer', {duration: 0.8, width: '0px', ease: "power1.out"}, "<33%")
+					animChangeover.to('.scoreContainer', {duration: 0.8, width: '0px',})
 					animChangeover.to('.infoContainer', {duration: 1, width: '0px', ease: "power1.out"}, "<33%")
-					animChangeover.to('.tourneyContainer', {duration: 0.4, height: '0px', width: '0px',  ease: "power1.in"})
+					animChangeover.to('.greenFlair', {duration: 0.2, width: '0px'}, "<70%")
+					animChangeover.to('.tourneyContainer', {duration: 0.4, height: '0px', width: '0px',  ease: "power1.out"})
 					break;
 				case true:
 					animChangeover.to('.tourneyContainer', {duration: 0.4, height: '200px', width: '110px', ease: "power1.out"})
-					animChangeover.to('.infoContainer', {duration: 1, width: '560px', ease: "power1.out"})
-					animChangeover.to('.scoreContainer', {duration: 0.8, width: '184px', ease: "power1.out"}, "<33%")
-					animChangeover.to('#greenFlair', {duration: 0.2, width: '10px'}, "<33%")
+					animChangeover.to('.greenFlair', {duration: 0.2, width: '10px', ease: "power1.out"},)
+					animChangeover.to('.infoContainer', {duration: 1, width: '560px', ease: "power1.out"}, "<33%")
+					animChangeover.to('.scoreContainer', {duration: 0.8, width: '184px',}, "<33%")
 					break;
 			}
 		}

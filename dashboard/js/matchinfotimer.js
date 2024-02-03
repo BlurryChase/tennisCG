@@ -1,6 +1,7 @@
 const matchReplicant = nodecg.Replicant('match');
 const timeReplicant = nodecg.Replicant('time');
 
+const court = document.querySelector("#court");
 const format = document.querySelector("#format");
 const round = document.querySelector("#round");
 const saveMatchInfo = document.querySelector("#saveMatchInfo");
@@ -50,21 +51,6 @@ function runTime() {
 
 }
 
-NodeCG.waitForReplicants(timeReplicant).then(() => {
-  timeCount = timeReplicant.value.matchTime;
-  matchTimer.innerHTML = moment().hour(0).minute(0).second(timeCount).format('HH : mm : ss');
-  set1Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set1 / 60) + " minutes" ;
-  set2Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set2 / 60) + " minutes" ;
-  set3Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set3 / 60) + " minutes" ;
-
-});
-
-NodeCG.waitForReplicants(timeReplicant).then(() => {
-
-  format.value = matchReplicant.value.matchInfo.format;
-  round.value = matchReplicant.value.matchInfo.round;
-
-});
 
 
 
@@ -95,8 +81,25 @@ function completeSet3() {
   return set3CompTime; 
 }
 
+NodeCG.waitForReplicants(timeReplicant).then(() => {
+  timeCount = timeReplicant.value.matchTime;
+  matchTimer.innerHTML = moment().hour(0).minute(0).second(timeCount).format('HH : mm : ss');
+  set1Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set1 / 60) + " minutes" ;
+  set2Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set2 / 60) + " minutes" ;
+  set3Time.innerHTML = Math.floor(timeReplicant.value.setTimes.set3 / 60) + " minutes" ;
+
+});
+
+NodeCG.waitForReplicants(timeReplicant).then(() => {
+
+  court.value = matchReplicant.value.matchInfo.court;
+  format.value = matchReplicant.value.matchInfo.format;
+  round.value = matchReplicant.value.matchInfo.round;
+
+});
 
 saveMatchInfo.onclick = () => {
+  matchReplicant.value.matchInfo.court = court.value
   matchReplicant.value.matchInfo.round = round.value
   matchReplicant.value.matchInfo.format = format.value
 }

@@ -5,7 +5,6 @@ const nameReplicant = nodecg.Replicant('match');
 // Declare Top Player (A) Vars
 
 let playerA_fullName = document.querySelector("#playerA_fullName");
-// let playerA_nameOverride = document.querySelector("#playerA_nameOverride");
 let playerA_serveIndicator = document.querySelector("#playerA_serveIndicator");
 let playerA_setWon = document.querySelector("#playerA_setWon");
 let playerA_currentSet_gamesWon = document.querySelector("#playerA_currentSet_gamesWon");
@@ -14,7 +13,6 @@ let playerA_currentSet_pointsWon = document.querySelector("#playerA_currentSet_p
 // Declare Bottom Player (B) Vars
 
 let playerB_fullName = document.querySelector("#playerB_fullName");
-// let playerB_nameOverride = document.querySelector("#playerB_nameOverride");
 let playerB_serveIndicator = document.querySelector("#playerB_serveIndicator");
 let playerB_setWon = document.querySelector("#playerB_setWon");
 let playerB_currentSet_gamesWon = document.querySelector("#playerB_currentSet_gamesWon");
@@ -42,10 +40,57 @@ let resetGames = document.querySelector("#resetGames");
 let resetPoints = document.querySelector("#resetPoints");
 let serveChange = document.querySelector("#serveChange");
 let setSelector = document.querySelector('#setSelector');
-let tiebreaker = document.querySelector('#tiebreaker');
+let tiebreaker = document.querySelector('.tiebreaker');
 let nameBtn = document.querySelector('#nameBtn')
 
+function upCount (playerVar) {
+  switch (setSelector.value) {
+    case ('set1'):
+      playerVar.set1 += 1
+      break;
+    case ('set2'):
+      playerVar.set2 += 1
+      break;
+    case ('set3'):
+      playerVar.set3 += 1
+      break;
+  }
+}
 
+function downCount (playerVar) {
+  switch (setSelector.value) {
+    case ('set1'):
+      playerVar.set1 -= 1
+      break;
+    case ('set2'):
+      playerVar.set2 -= 1
+      break;
+    case ('set3'):
+      playerVar.set3 -= 1
+      break;
+  }
+}
+
+function setGameUpdate () {
+  switch (setSelector.value) {
+    case ('set1'):
+      playerA_currentSet_gamesWon.innerHTML = nameReplicant.value.playerA.currentSet.gamesWon = nameReplicant.value.playerA.completedSets.gamesPerSet.set1;
+      playerB_currentSet_gamesWon.innerHTML = nameReplicant.value.playerB.currentSet.gamesWon = nameReplicant.value.playerB.completedSets.gamesPerSet.set1;
+
+      break;
+    case ('set2'):
+      playerA_currentSet_gamesWon.innerHTML = nameReplicant.value.playerA.currentSet.gamesWon = nameReplicant.value.playerA.completedSets.gamesPerSet.set2;
+      playerB_currentSet_gamesWon.innerHTML = nameReplicant.value.playerB.currentSet.gamesWon = nameReplicant.value.playerB.completedSets.gamesPerSet.set2;
+
+      break;
+    case ('set3'):
+      playerA_currentSet_gamesWon.innerHTML = nameReplicant.value.playerA.currentSet.gamesWon = nameReplicant.value.playerA.completedSets.gamesPerSet.set3;
+      playerB_currentSet_gamesWon.innerHTML = nameReplicant.value.playerB.currentSet.gamesWon = nameReplicant.value.playerB.completedSets.gamesPerSet.set3;
+
+      break;
+  }
+  
+}
 
 
 
@@ -101,17 +146,18 @@ playerA_gameUp.onclick = () => {
   nameReplicant.value.playerA.currentSet.gamesWon += 1;
   nameReplicant.value.playerA.currentSet.pointsWon = 0;
   nameReplicant.value.playerB.currentSet.pointsWon = 0;
-  switch (setSelector.value) {
-    case ('set1'):
-      nameReplicant.value.playerA.completedSets.gamesPerSet.set1 += 1
-      break;
-    case ('set2'):
-      nameReplicant.value.playerA.completedSets.gamesPerSet.set2 += 1
-      break;
-    case ('set3'):
-      nameReplicant.value.playerA.completedSets.gamesPerSet.set3 += 1
-      break;
-  }
+  upCount(nameReplicant.value.playerA.completedSets.gamesPerSet);
+  // switch (setSelector.value) {
+  //   case ('set1'):
+  //     nameReplicant.value.playerA.completedSets.gamesPerSet.set1 += 1
+  //     break;
+  //   case ('set2'):
+  //     nameReplicant.value.playerA.completedSets.gamesPerSet.set2 += 1
+  //     break;
+  //   case ('set3'):
+  //     nameReplicant.value.playerA.completedSets.gamesPerSet.set3 += 1
+  //     break;
+  // }
 };
 
 playerA_gameDown.onclick = () => {

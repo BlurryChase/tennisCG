@@ -34,7 +34,7 @@ body {
     /* left: 190px;
     top: 800px; */
     left: 190px;
-    top: 800px;
+    top: 100px;
     width: 860px;
     height: 200px;
 
@@ -182,7 +182,7 @@ body {
     line-height: 40px;
 }
 
-#greenFlair {
+.greenFlair {
     
     background: #008e33;
     width: 10px;

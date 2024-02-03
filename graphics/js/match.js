@@ -9,7 +9,7 @@
 
 	let pointDur = 0.18
 
-	let anim = gsap.timeline();
+	let animScoreboard = gsap.timeline();
 
 
 
@@ -160,19 +160,18 @@
 				case (newValue.playerA.currentSet.pointsWon === 4 && newValue.playerB.currentSet.pointsWon === 3 ):
 					gsap.to("#playerB_pointsWon", { duration: pointDur, opacity: 0 })	
 					return;
-
 				case (newValue.playerA.currentSet.pointsWon === 3 && newValue.playerB.currentSet.pointsWon === 4 ):
 					gsap.to("#playerA_pointsWon", { duration: pointDur, opacity: 0 })	
 					return;
 				case (newValue.playerA.currentSet.pointsWon === 3 && newValue.playerB.currentSet.pointsWon === 3 ):
-					console.log("duece reached")
+					// console.log("duece reached")
 					if (document.getElementById("playerA_pointsWon").style.opacity == 0) {
-						console.log('setting player A opacity...')
+						// console.log('setting player A opacity...')
 						gsap.to("#playerA_pointsWon", { duration: pointDur, opacity: 1, delay: pointDur })	
 					}
 					console.log('midpoint');
 					if (document.getElementById("playerB_pointsWon").style.opacity == 0) {
-						console.log('setting player B opacity...')
+						// console.log('setting player B opacity...')
 						gsap.to("#playerB_pointsWon", { duration: pointDur, opacity: 1, delay: pointDur })	
 					}
 					return;
@@ -185,18 +184,18 @@
 			switch (newValue.scoreboardVisible) {
 				case false:
 					// gsap.to('#scoreContainer', {opacity: 0, duration: 0.5})
-					anim.to('#pointsWonContainer', {duration: 0.3, width: '0px'})
-					anim.to('#gamesWonContainer', {duration: 0.3, width: '0px'}, "<33%")
-					anim.to('#setsWonContainer', {duration: 0.3, width: '0px'}, "<33%")
-					anim.to('#nameContainer', {duration: 0.5, width: '0px'}, "<33%")
-					anim.to('#animateContainer', {duration: 0.4, height: '0px',  ease: "power1.in"})
+					animScoreboard.to('#pointsWonContainer', {duration: 0.3, width: '0px'})
+					animScoreboard.to('#gamesWonContainer', {duration: 0.3, width: '0px'}, "<33%")
+					animScoreboard.to('#setsWonContainer', {duration: 0.3, width: '0px'}, "<33%")
+					animScoreboard.to('#nameContainer', {duration: 0.5, width: '0px'}, "<33%")
+					animScoreboard.to('#animateContainer', {duration: 0.4, height: '0px',  ease: "power1.in"})
 					break;
 				case true:
-					anim.to('#animateContainer', {duration: 0.5, height: '80px', ease: "power1.out"})
-					anim.to('#nameContainer', {duration: 0.5, width: 'auto'})
-					anim.to('#setsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
-					anim.to('#gamesWonContainer', {duration: 0.3, width: '40px'}, "<33%")
-					anim.to('#pointsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					animScoreboard.to('#animateContainer', {duration: 0.5, height: '80px', ease: "power1.out"})
+					animScoreboard.to('#nameContainer', {duration: 0.5, width: 'auto'})
+					animScoreboard.to('#setsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					animScoreboard.to('#gamesWonContainer', {duration: 0.3, width: '40px'}, "<33%")
+					animScoreboard.to('#pointsWonContainer', {duration: 0.3, width: '40px'}, "<33%")
 					break;
 			}
 		}

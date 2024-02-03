@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<style>
-
-		</style>
+		<link rel="stylesheet" type="text/css" href="css/ingame.css">
 	</head>
 <body>
 
@@ -20,7 +18,7 @@
 					<button id="serveChange" >SERVICE CHANGE</button>
 				</td>
 				<td>
-					<select id="setSelector">
+					<select id="setSelector" onchange="setGameUpdate()">
 						<option value="set1">Set 1</option>
 						<option value="set2">Set 2</option>
 						<option value="set3">Set 3</option>
@@ -30,7 +28,7 @@
 					<p>TIEBREAKER:</p>
 				</td>
 				<td>
-					<input type="checkbox" id="tiebreaker">
+					<input type="checkbox" class="tiebreaker">
 				</td>
 			</tr>
 		</tr>
@@ -49,7 +47,7 @@
 		</tr>
 		<tr>
 			<td>
-				<p id="playerA_fullName"></p>
+				<p id="playerA_fullName" class="players"></p>
 			</td>
 			<!-- <td>
 				<input id="playerA_nameOverride" type="text"></input>
@@ -81,7 +79,7 @@
 		</tr>
 		<tr>
 			<td>
-				<p id="playerB_fullName"></p>
+				<p id="playerB_fullName" class="players"></p>
 			</td>
 			<!-- <td>
 				<input id="playerB_nameOverride" type="text"></input>
@@ -112,8 +110,6 @@
 			</td>
 		</tr>
 	</table>
-
-	<button id="nameBtn">Override Last Name</button>
 </body>
 
 <script src="js/scoreboard.js"></script>
