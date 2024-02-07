@@ -1,3 +1,3 @@
 # tennisCG
-Open-source library for a tennis broadcast, leveraging NodeCG as the method of delivery
+Open-source proof-of-concept library for a tennis broadcast, leveraging NodeCG as the dashboard and graphics server.
 

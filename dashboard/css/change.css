@@ -1,0 +1,20 @@
+body {
+    text-align: center;
+}
+
+button {
+    padding: 8px;
+}
+
+#setSelector {
+    padding: 8px
+}
+
+input.tiebreaker {
+    width: 20px;
+    height: 20px;
+}
+
+.players {
+    font-weight: bold;
+}

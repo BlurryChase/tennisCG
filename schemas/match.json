@@ -9,7 +9,8 @@
         "court" : { "type" : "string", "default": "Center Court" },
         "format" : { "type" : "string", "default": "Men's Singles" },
         "round" : { "type" : "string", "default": "Final" },
-        "tiebreaker": {"type": "boolean", "default": false }
+        "tiebreaker": {"type": "boolean", "default": false },
+        "currentSet": {"type": "string", "default": "set1"}
       }
     },
 

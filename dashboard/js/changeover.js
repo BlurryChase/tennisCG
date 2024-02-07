@@ -27,9 +27,20 @@ let reSet1 = document.querySelector('#resetSet1');
 let reSet2 = document.querySelector('#resetSet2');
 let reSet3 = document.querySelector('#resetSet3');
 
-NodeCG.waitForReplicants(nameReplicant).then(() => {
-  playerA_set1Won.checked = nameReplicant.value.playerA.completedSets.setWon.set1
-});
+function reSet (arg) {
+  nameReplicant.value.playerA.completedSets.setWon[arg] = false;
+  nameReplicant.value.playerA.completedSets.gamesPerSet[arg] = 0;
+
+  nameReplicant.value.playerB.completedSets.setWon[arg] = false;
+  nameReplicant.value.playerB.completedSets.gamesPerSet[arg] = 0;
+}
+
+function gameUpdate (arg1, arg2, val) {
+  nameReplicant.value[arg1].completedSets.gamesPerSet[arg2] = val;
+  if (arg2 === nameReplicant.value.matchInfo.currentSet) {
+    nameReplicant.value[arg1].currentSet.gamesWon = val;
+  }
+}
 
 
 nameReplicant.on('change', (newValue, oldValue) => {
@@ -59,27 +70,16 @@ nameReplicant.on('change', (newValue, oldValue) => {
 });
 
 reSet1.onclick = () => {
-  nameReplicant.value.playerA.completedSets.setWon.set1 = false;
-  nameReplicant.value.playerA.completedSets.gamesPerSet.set1 = 0;
-
-  nameReplicant.value.playerB.completedSets.setWon.set1 = false;
-  nameReplicant.value.playerB.completedSets.gamesPerSet.set1 = 0;
+  reSet('set1');
 };
 
 reSet2.onclick = () => {
-  nameReplicant.value.playerA.completedSets.setWon.set2 = false;
-  nameReplicant.value.playerA.completedSets.gamesPerSet.set2 = 0;
+  reSet('set2');
 
-  nameReplicant.value.playerB.completedSets.setWon.set2 = false;
-  nameReplicant.value.playerB.completedSets.gamesPerSet.set2 = 0;
 };
 
 reSet3.onclick = () => {
-  nameReplicant.value.playerA.completedSets.setWon.set3 = false;
-  nameReplicant.value.playerA.completedSets.gamesPerSet.set3 = 0;
-
-  nameReplicant.value.playerB.completedSets.setWon.set3 = false;
-  nameReplicant.value.playerB.completedSets.gamesPerSet.set3 = 0;
+  reSet('set3');
 };
 
 
@@ -103,9 +103,26 @@ playerB_set3Won.onclick = () => {
   nameReplicant.value.playerB.completedSets.setWon.set3 = playerB_set3Won.checked;
 }
 
+playerA_set1Score.onchange = () => {
+  gameUpdate('playerA', 'set1', Number(playerA_set1Score.value));
+};
 
-// Change Points/Games
+playerA_set2Score.onchange = () => {
+  gameUpdate('playerA', 'set2', Number(playerA_set2Score.value));
+};
 
-// Change Serve, Reset Points & Games
+playerA_set3Score.onchange = () => {
+  gameUpdate('playerA', 'set3', Number(playerA_set3Score.value));
+};
 
+playerB_set1Score.onchange = () => {
+  gameUpdate('playerB', 'set1', Number(playerB_set1Score.value));
+};
 
+playerB_set2Score.onchange = () => {
+  gameUpdate('playerB', 'set2', Number(playerB_set2Score.value));
+};
+
+playerB_set3Score.onchange = () => {
+  gameUpdate('playerB', 'set3', Number(playerB_set3Score.value));
+};
