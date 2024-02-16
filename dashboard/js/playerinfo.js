@@ -35,7 +35,7 @@ Papa.parse('js/flags.csv', {
 
 
 
-nameReplicant.on('change', (newValue, oldValue) => {
+nameReplicant.on('change', (newValue) => {
   // The value of the Replicant has changed somewhere in NodeCG,
   // this could be another dashboard panel, a server initiated change,
   // or the doing of another user accessing your dashboard panel.
@@ -58,13 +58,8 @@ submitButton.onclick = () => {
   nameReplicant.value.playerA.personalInfo.nation = playerA_nation.value;
   nameReplicant.value.playerA.personalInfo.seed = Number(playerA_seed.value);
 
-  console.log(nameReplicant.value.playerA.personalInfo);
-
   nameReplicant.value.playerB.personalInfo.firstName = playerB_firstName.value;
   nameReplicant.value.playerB.personalInfo.lastName = playerB_lastName.value;
   nameReplicant.value.playerB.personalInfo.nation = playerB_nation.value;
   nameReplicant.value.playerB.personalInfo.seed = Number(playerB_seed.value);
-
-  console.log(nameReplicant.value.playerB.personalInfo);
-
 };

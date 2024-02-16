@@ -11,7 +11,7 @@
 
 	let animScoreboard = gsap.timeline();
 
-
+	// function pointCheck modifies innerHTML for the point's winner to line up with tennis point scoring, including A for Advantage
 
 	function pointCheck(whoWon, point) {
 		switch (true) {
@@ -36,6 +36,11 @@
 	}
 
 	NodeCG.waitForReplicants(matchReplicant).then(() => {
+
+		// waitForReplicants allows us to call out the replicant variables we need to load the page properly.
+		// you *can* get around this, but since we are comparing OldValue against NewValue, some stuff won't load or animate properly if we rely on the change event
+		
+		
 		// populate player A's information
 		// player a name
 		playerA_name.innerHTML = matchReplicant.value.playerA.personalInfo.lastName
@@ -91,13 +96,15 @@
 
 		playerA_name.innerHTML = newValue.playerA.personalInfo.lastName;
 
+		// checking if the old value for games won matches the new value. if it's true, we animate the old number out and replace it with the new value
 		if (oldValue.playerA.currentSet.gamesWon != newValue.playerA.currentSet.gamesWon) {
 			gsap.to("#playerA_gamesWon", {duration: pointDur, opacity: 0, onComplete: function () {
 				playerA_gamesWon.innerHTML = newValue.playerA.currentSet.gamesWon;
 				gsap.to("#playerA_gamesWon", { duration: pointDur, opacity: 1 });
 			}});
 		}
-		
+
+		// checking if the old value for points won matches the new value. if it's true, we animate the old number out and replace it with the new value
 		if (oldValue.playerA.currentSet.pointsWon != newValue.playerA.currentSet.pointsWon) {
 			gsap.to("#playerA_pointsWon", {duration: pointDur, opacity: 0, onComplete: function () {
 				if (matchReplicant.value.matchInfo.tiebreaker === true) {
@@ -109,6 +116,8 @@
 			}});
 		} 
 
+
+		// in theory sets won shouldn't be updated when the graphic is visible
 		playerA_setsWon.innerHTML = 
 		Number(newValue.playerA.completedSets.setWon.set1) + 
 		Number(newValue.playerA.completedSets.setWon.set2) + 
@@ -118,7 +127,7 @@
 
 		playerB_name.innerHTML = newValue.playerB.personalInfo.lastName;
 
-
+		// checking if the old value for games won matches the new value. if it's true, we animate the old number out and replace it with the new value
 		if (oldValue.playerB.currentSet.gamesWon != newValue.playerB.currentSet.gamesWon) {
 			gsap.to("#playerB_gamesWon", {duration: pointDur, opacity: 0, onComplete: function () {
 				playerB_gamesWon.innerHTML = newValue.playerB.currentSet.gamesWon;
@@ -126,6 +135,7 @@
 			}});
 		}
 		
+		// checking if the old value for points won matches the new value. if it's true, we animate the old number out and replace it with the new value
 		if (oldValue.playerB.currentSet.pointsWon != newValue.playerB.currentSet.pointsWon) {
 			gsap.to("#playerB_pointsWon", {duration: pointDur, opacity: 0, onComplete: function () {
 				if (matchReplicant.value.matchInfo.tiebreaker === true) {
@@ -137,12 +147,15 @@
 			}});
 		} 
 
+		// in theory sets won shouldn't be updated when the graphic is visible
+
 		playerB_setsWon.innerHTML = 
 		Number(newValue.playerB.completedSets.setWon.set1) + 
 		Number(newValue.playerB.completedSets.setWon.set2) + 
 		Number(newValue.playerB.completedSets.setWon.set3) ;
 
-		
+		// Check for if Player A is serving. If true, indicator is visible for them and not Player B. If false, other way around
+
 		if (newValue.playerA.personalInfo.serveIndicator === true) {
 			gsap.to("#playerB_serve", {duration: pointDur, opacity: 0, onComplete: function () {
 				gsap.to("#playerA_serve", { duration: pointDur, opacity: 1, delay: 0.1})
@@ -180,6 +193,15 @@
 		}};
 
 		// visibility
+
+		/*
+		this uses GSAP to animate in and out, visit https://gsap.com/docs/v3/ for documentation
+		
+		uses the timeline object declared at the beginning of the file, to generalize:
+
+		animChangeover.to([target DOM Element], {animation variables [duration, width, etc...]}, [animation start overlap, "<33%" starts animation when previous animation is 33% complete])
+
+		*/
 		if (newValue.scoreboardVisible != oldValue.scoreboardVisible) {
 			switch (newValue.scoreboardVisible) {
 				case false:

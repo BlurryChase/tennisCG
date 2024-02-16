@@ -23,9 +23,13 @@ let playerB_set1Score = document.querySelector('#playerB_set1Score');
 let playerB_set2Score = document.querySelector('#playerB_set2Score');
 let playerB_set3Score = document.querySelector('#playerB_set3Score');
 
+// reset set variables
+
 let reSet1 = document.querySelector('#resetSet1');
 let reSet2 = document.querySelector('#resetSet2');
 let reSet3 = document.querySelector('#resetSet3');
+
+// reSet resets the set score for that particual set.
 
 function reSet (arg) {
   nameReplicant.value.playerA.completedSets.setWon[arg] = false;
@@ -35,6 +39,8 @@ function reSet (arg) {
   nameReplicant.value.playerB.completedSets.gamesPerSet[arg] = 0;
 }
 
+// gameUpdate updatesthe CurrentSet -> Games Won value
+
 function gameUpdate (arg1, arg2, val) {
   nameReplicant.value[arg1].completedSets.gamesPerSet[arg2] = val;
   if (arg2 === nameReplicant.value.matchInfo.currentSet) {
@@ -43,8 +49,11 @@ function gameUpdate (arg1, arg2, val) {
 }
 
 
-nameReplicant.on('change', (newValue, oldValue) => {
+nameReplicant.on('change', (newValue) => {
 
+  // on('change') fires every time we reload the page
+  
+  // load player A's information
 
   playerA_fullName.innerHTML = newValue.playerA.personalInfo.firstName + " " + newValue.playerA.personalInfo.lastName;
   
@@ -56,6 +65,7 @@ nameReplicant.on('change', (newValue, oldValue) => {
   playerA_set2Score.value = newValue.playerA.completedSets.gamesPerSet.set2;
   playerA_set3Score.value = newValue.playerA.completedSets.gamesPerSet.set3;
 
+  // load player B's information
 
   playerB_fullName.innerHTML = newValue.playerB.personalInfo.firstName + " " + newValue.playerB.personalInfo.lastName;
 
@@ -69,19 +79,21 @@ nameReplicant.on('change', (newValue, oldValue) => {
 
 });
 
+// reset the set score
+
 reSet1.onclick = () => {
   reSet('set1');
 };
 
 reSet2.onclick = () => {
   reSet('set2');
-
 };
 
 reSet3.onclick = () => {
   reSet('set3');
 };
 
+// these onClick events will update the replicant's completedSets.SetWon values to TRUE or FALSE
 
 playerA_set1Won.onclick = () => {
   nameReplicant.value.playerA.completedSets.setWon.set1 = playerA_set1Won.checked;
@@ -102,6 +114,8 @@ playerB_set2Won.onclick = () => {
 playerB_set3Won.onclick = () => {
   nameReplicant.value.playerB.completedSets.setWon.set3 = playerB_set3Won.checked;
 }
+
+// onChange event updates the set Score for that input
 
 playerA_set1Score.onchange = () => {
   gameUpdate('playerA', 'set1', Number(playerA_set1Score.value));
