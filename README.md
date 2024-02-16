@@ -8,6 +8,7 @@ Open-source proof-of-concept library for a tennis broadcast, leveraging NodeCG a
 2. Install [NodeCG](https://nodecg.dev) 
 
 3. Drop this bundle (tennisCG) into `nodecg/bundles`.
+
 ALT: If you installed NodeCG through [nodecg-cli](https://www.npmjs.com/package/nodecg-cli), you can use 'nodecg' terminal commands.
 
 ```
@@ -38,9 +39,9 @@ The Match Replicant houses the majority of the data used. This includes Match In
 
 Properties of matchInfo
 
-Access Point: `matchReplicant.value.matchInfo.PROPERTIES` [^1]
+Access Point: `matchReplicant.value.matchInfo.PROPERTIES`
 
-[^1]: For on('change'), this will be called as `newValue.matchInfo.PROPERTIES`
+ALT: For on('change'), this will be called as `newValue.matchInfo.PROPERTIES`
 
 
 | Name | Type | Description |
@@ -53,9 +54,9 @@ Access Point: `matchReplicant.value.matchInfo.PROPERTIES` [^1]
 
 Properties of playerA & playerB
 
-Access Point: `matchReplicant.value.playerA.PROPERTIES` or `matchReplicant.value.playerB.PROPERTIES` [^2]
+Access Point: `matchReplicant.value.playerA.PROPERTIES` or `matchReplicant.value.playerB.PROPERTIES` 
 
-[^2]: For on('change'), this will be called as `newValue.playerA.PROPERTIES` or `newValue.playerB.PROPERTIES`
+ALT: For on('change'), this will be called as `newValue.playerA.PROPERTIES` or `newValue.playerB.PROPERTIES`
 
 | Name | Type | Description |
 | ----------- | ----------- | -------------- |
