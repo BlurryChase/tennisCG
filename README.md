@@ -40,7 +40,7 @@ Properties of matchInfo
 
 Access Point: `matchReplicant.value.matchInfo.PROPERTIES` [^1]
 
-[^1] For on('change'), this will be called as `newValue.matchInfo.PROPERTIES`
+[^1]: For on('change'), this will be called as `newValue.matchInfo.PROPERTIES`
 
 
 | Name | Type | Description |
@@ -55,7 +55,7 @@ Properties of playerA & playerB
 
 Access Point: `matchReplicant.value.playerA.PROPERTIES` or `matchReplicant.value.playerB.PROPERTIES` [^2]
 
-[^2] For on('change'), this will be called as `newValue.playerA.PROPERTIES` or `newValue.playerB.PROPERTIES`
+[^2]: For on('change'), this will be called as `newValue.playerA.PROPERTIES` or `newValue.playerB.PROPERTIES`
 
 | Name | Type | Description |
 | ----------- | ----------- | -------------- |
