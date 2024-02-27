@@ -93,5 +93,36 @@ currentSet
 | setWon.set{number} | boolean | T/F if Player Won the Set |
 
 
+### Time Replicant
+
+The Time Replicant has information for timekeeping. Uses [momentJS](https://momentjs.com/) to track time.
+
+| Name | Type | Description |
+| ----------- | ----------- | -------------- |
+| matchTime | integer | Total Match Time |
+| setTimes | object | Object for Set timestamps |
+| setTimes.set{number} | boolean | Timestamp for that specific Set. Used in Changeover Graphic |
+
+
+### Dependancies
+
+Because you have to do some trickery to get npm modules to work properly in NodeCG, I've included them for sake of convenience.
+
+[momentJS](https://momentjs.com/) is used to track the Time for the Time Replicant.
+
+[GSAP](https://gsap.com/) is used to animate in/out the Scoreboard & Changeover Graphics.
+
+[PapaParse](https://www.papaparse.com/) is used to parse the country information into a useable JSON object for our Player Information Replicants.
+
+### Interested in Using this?
+
+Go right ahead! Play around with it, maybe integrate some feature I haven't, or use it for a broadcast of your own! <--- If you do, please, let me know so I can watch it! I'd love to see it in action!
+
+### Special Thanks
+
+* To my roommates, for helping me think through my object structure for this application
+* To my friends on Discord, for listening to me bitch gripe & moan about this project in vc
+* To cglitcher, who has given me advice and helped me work though problems & issues
+* To you, who might find some value in this project
 
 

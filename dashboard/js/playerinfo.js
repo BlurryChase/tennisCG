@@ -1,11 +1,11 @@
 const playerA_firstName = document.querySelector('#playerA_firstName');
 const playerA_lastName = document.querySelector('#playerA_lastName');
-const playerA_nation= document.querySelector('#playerA_nation');
+const playerA_nation = document.querySelector('#playerA_nation');
 const playerA_seed = document.querySelector('#playerA_seed');
 
 const playerB_firstName = document.querySelector('#playerB_firstName');
 const playerB_lastName = document.querySelector('#playerB_lastName');
-const playerB_nation= document.querySelector('#playerB_nation');
+const playerB_nation = document.querySelector('#playerB_nation');
 const playerB_seed = document.querySelector('#playerB_seed');
 
 const submitButton = document.querySelector('#submitButton');
@@ -15,21 +15,22 @@ const nameReplicant = nodecg.Replicant('match');
 
 var data;
 
-Papa.parse('js/flags.csv', {
-  download: true,
-  header: true,
-  dynamicTyping: true,
-  skipEmptyLines: true,
-  complete: function(results) {
-    data = results.data;
-    console.log(data.length);
-    console.log(data);
-    for (let i = 0; i < data.length; i++) {
-      playerA_nation.options[playerA_nation.options.length] = new Option(data[i]["Country"], data[i]["Code"]);
-      playerB_nation.options[playerB_nation.options.length] = new Option(data[i]["Country"], data[i]["Code"]);
+  
+  Papa.parse('js/flags.csv', {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      data = results.data;
+      console.log(data.length);
+      console.log(data);
+      for (let i = 0; i < data.length; i++) {
+        playerA_nation.options[playerA_nation.options.length] = new Option(data[i]["Country"], data[i]["Code"]);
+        playerB_nation.options[playerB_nation.options.length] = new Option(data[i]["Country"], data[i]["Code"]);
+      }
     }
-  }
-});
+  });
 
 
 

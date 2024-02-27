@@ -1,3 +1,5 @@
+import { gsap } from 'gsap';
+	
 	// We can access Replicants from other bundles by specifying the bundle name as a second parameter.
 	// NodeCG requires that bundle names match their directory names, but you can always check the `package.json` to double check.
 	const matchReplicant = nodecg.Replicant('match');

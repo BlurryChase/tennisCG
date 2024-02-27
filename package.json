@@ -1,6 +1,6 @@
 {
   "name": "tennisCG",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "",
   "homepage": "",
   "author": {
@@ -46,8 +46,7 @@
         "width": 5,
         "file": "matchinfotimer.html",
         "headerColor": "#525F78"
-      }
-      ,
+      },
       {
         "name": "graphiccontrol",
         "title": "Graphic Controls",
@@ -69,9 +68,5 @@
       }
     ]
   },
-  "license": "Apache-2.0",
-  "dependencies": {
-    "bonjour": "^3.5.0",
-    "express": "^4.18.2"
-  }
+  "license": "Apache-2.0"
 }
